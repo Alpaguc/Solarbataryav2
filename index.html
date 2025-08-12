@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Güneş Enerjisi Depolamalı Sistem Analiz Platformu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --solar-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --border-radius: 20px;
+            --neon-glow: 0 0 20px rgba(255, 215, 0, 0.5);
+            --hover-transform: translateY(-5px) scale(1.02);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(rgba(14, 38, 70, 0.85), rgba(22, 72, 143, 0.85)), 
+                        url('https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Modern Glass Morphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card-white {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        /* Footer ve Sosyal Medya Linkleri */
+        .footer {
+            margin-top: 4rem;
+            width: 100%;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .social-link:hover {
+            transform: translateY(-3px);
+            text-decoration: none;
+            color: white;
+        }
+
+        .youtube-link {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .youtube-link:hover {
+            background: linear-gradient(135deg, #ff3333, #ff0000);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .linkedin-link {
+            background: linear-gradient(135deg, #0077b5, #005885);
+            box-shadow: 0 4px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .linkedin-link:hover {
+            background: linear-gradient(135deg, #0099cc, #0077b5);
+            box-shadow: 0 6px 20px rgba(0, 119, 181, 0.5);
+        }
+
+        .social-link i {
+            font-size: 1.2rem;
+        }
+
+        /* About Content Styling */
+        .about-content {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .about-content h6 {
+            font-weight: 600;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .about-content p {
+            font-size: 0.95rem;
+            text-align: justify;
+            line-height: 1.7;
+        }
+
+        /* Hero Header Styling */
+        .hero-header {
+            text-align: center;
+            padding: 2rem 0 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.6);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 2px 4px 8px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.1);
+            }
+            100% {
+                text-shadow: 2px 4px 12px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.2);
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 400;
+            margin-bottom: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo-image {
+            max-width: 180px;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
+            transition: all 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05) rotate(2deg);
+            filter: drop-shadow(0 6px 16px rgba(255, 255, 255, 0.3));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .logo-image {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Upload Areas */
+        .upload-container {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .upload-area:hover {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        .btn-modern {
+            background: var(--solar-gradient);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 2.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn-modern:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            color: white;
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+
+        .btn-modern:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary-modern {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            font-weight: 500;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-modern:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 1rem 2.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-success-modern {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            transition: all 0.3s ease;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #FFD700;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .info-card:hover::before {
+            left: 100%;
+        }
+
+        .info-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-left-color: #FFA500;
+        }
+
+        .info-card h6 {
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .info-card ul {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0;
+        }
+
+        .info-card li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: var(--success-gradient);
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+        
+        /* Responsive stats cards */
+        @media (max-width: 768px) {
+            .stats-value {
+                font-size: 1.2rem;
+            }
+            
+            .stats-label {
+                font-size: 0.8rem;
+            }
+            
+            .stats-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .stats-value {
+                font-size: 1rem;
+            }
+            
+            .stats-label {
+                font-size: 0.7rem;
+            }
+            
+            .stats-card {
+                padding: 1rem 0.5rem;
+            }
+        }
+
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 1.5rem 0;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 400px;
+        }
+        
+        .chart-container canvas {
+            max-height: 350px;
+            width: 100% !important;
+        }
+
+        .chart-container:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        /* Loading Animation */
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+            box-shadow: var(--neon-glow);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .glass-card {
+                padding: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+        }
+
+        /* Table hover effects */
+        .table-hover tbody tr:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(147, 197, 253, 0.08)) !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+            border-left: 3px solid #60A5FA;
+            transform: translateY(-1px);
+        }
+
+        /* Özel tablo stilleri - tema uyumluluğu için */
+        .table-dark.table-hover tbody tr:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 197, 253, 0.1)) !important;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            border-left: 3px solid #60A5FA;
+            transform: translateY(-1px);
+        }
+
+        /* Sidebar Layout */
+        .main-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: rgba(248, 250, 252, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(220, 220, 220, 0.3);
+            position: fixed;
+            left: 15px;
+            top: 15px;
+            height: calc(100vh - 30px);
+            z-index: 1000;
+            padding: 1.5rem 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin: 0 1.5rem 0 1.5rem;
+            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            border: 1px solid rgba(220, 220, 220, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .sidebar-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1.2rem;
+            right: 1.2rem;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #E5E7EB 20%, #E5E7EB 80%, transparent);
+        }
+
+        .sidebar-header i {
+            font-size: 1.8rem;
+            color: #1F2937;
+            margin: 0;
+        }
+
+        .sidebar-header h5 {
+            color: #1F2937;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-nav {
+            padding: 2rem 1.5rem 1rem 1.5rem;
+            flex-grow: 1;
+        }
+        
+        /* Sidebar Footer - Kullanıcı Durumu */
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .user-actions .btn {
+            flex: 1;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-actions .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .user-info {
+            text-align: center;
+        }
+        
+        .user-welcome {
+            color: #10B981;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+        
+        .username {
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logout-btn {
+            width: 100%;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #EF4444;
+            color: #EF4444;
+            transform: translateY(-1px);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 1.4rem 1.6rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #9CA3AF;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-link i {
+            font-size: 1.3rem;
+            margin-right: 1.2rem;
+            width: 24px;
+            text-align: center;
+            color: #9CA3AF;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-link span {
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar-link:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 197, 253, 0.08));
+            color: #ffffff;
+            transform: translateX(8px) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .sidebar-link:hover i {
+            color: #60A5FA;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
+            color: #ffffff;
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link.active i {
+            color: #60A5FA;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .sidebar-link.active span {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-area {
+            margin-left: 350px;
+            flex: 1;
+            padding: 2rem;
+            width: calc(100% - 350px);
+        }
+
+        /* Mobile responsive for hero */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+                animation: none; /* Mobilde animasyonu kaldır */
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .logo-image {
+                max-width: 150px;
+            }
+            
+            .hero-header {
+                padding: 1.5rem 1rem 2rem;
+            }
+        }
+
+        /* Authentication Gate Styles */
+        .auth-gate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0e2646 0%, #16488f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+        }
+
+        /* Modal z-index fix */
+        .modal-backdrop {
+            z-index: 10040 !important;
+        }
+        
+        .modal {
+            z-index: 10050 !important;
+        }
+
+
+        
+        .modal-dialog {
+            z-index: 10051 !important;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .auth-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .auth-close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+            transform: scale(1.1);
+        }
+
+        .guest-separator {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .guest-separator hr {
+            flex: 1;
+            border: none;
+            height: 1px;
+            background: #ddd;
+            margin: 0;
+        }
+
+        .guest-separator span {
+            padding: 0 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .auth-header .logo-section i {
+            font-size: 4rem;
+            color: #16488f;
+            margin-bottom: 1rem;
+        }
+
+        .auth-header h2 {
+            color: #0e2646 !important;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-section p {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #16488f;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+            letter-spacing: 0.02em;
+        }
+
+        .auth-header p {
+            color: #374151 !important;
+            margin-bottom: 2rem;
+        }
+
+        .auth-content h4 {
+            color: #0e2646 !important;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .auth-content p {
+            color: #374151 !important;
+            line-height: 1.6;
+        }
+
+        .auth-buttons {
+            margin: 2rem 0;
+        }
+
+        .auth-buttons .btn {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer !important;
+            border: 2px solid transparent;
+        }
+
+        .auth-buttons .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8) !important;
+            color: white !important;
+            border-color: #3B82F6;
+        }
+
+        .auth-buttons .btn-outline-light {
+            background: transparent !important;
+            color: #374151 !important;
+            border: 2px solid #6B7280 !important;
+        }
+
+        .auth-buttons .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-buttons .btn-primary:hover {
+            background: linear-gradient(135deg, #1D4ED8, #1E40AF) !important;
+        }
+
+        .auth-buttons .btn-outline-light:hover {
+            background: #F3F4F6 !important;
+            border-color: #374151 !important;
+        }
+
+        .auth-features {
+            text-align: left;
+            background: rgba(22, 72, 143, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .auth-features h6 {
+            color: #16488f !important;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            color: #374151 !important;
+            font-size: 0.9rem;
+        }
+
+        .feature-list i {
+            color: #16488f !important;
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        /* Protected Content Initially Hidden */
+        .main-layout.d-none {
+            display: none !important;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .auth-buttons .btn {
+                display: block;
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+
+            .auth-header .logo-section i {
+                font-size: 3rem;
+            }
+            
+            .auth-close-btn {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: calc(100% - 30px);
+                height: auto;
+                position: relative;
+                left: 15px;
+                top: 15px;
+                margin-bottom: 15px;
+                border-radius: 20px;
+                padding: 1rem 0;
+            }
+            
+            .sidebar-header {
+                margin: 0.5rem 1rem 0 1rem;
+                padding: 1.2rem 1rem 1rem 1rem;
+                justify-content: center;
+            }
+            
+            .sidebar-nav {
+                padding: 1rem 1.5rem 0 1.5rem;
+            }
+            
+            .content-area {
+                margin-left: 0;
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar-nav {
+                display: flex;
+                overflow-x: auto;
+                padding: 0 1rem;
+                gap: 0.75rem;
+            }
+            
+            .sidebar-footer {
+                padding: 1rem;
+            }
+            
+            .user-actions .btn {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+            }
+            
+            .sidebar-link {
+                flex-direction: column;
+                min-width: 90px;
+                padding: 1rem 0.75rem;
+                text-align: center;
+                margin-bottom: 0;
+                font-size: 0.9rem;
+            }
+            
+            .sidebar-link i {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+                font-size: 1.2rem;
+            }
+            
+            .sidebar-link span {
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+        }
+
+        /* Tab Content */
+        .tab-content {
+            margin-top: 1rem;
+        }
+
+        .tab-pane {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Report Cards */
+        .report-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .report-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .report-icon {
+            font-size: 3rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+        }
+
+        /* Settings Cards */
+        .settings-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .settings-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        /* Design Cards */
+        .design-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .design-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .design-card h5 {
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .design-card label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .design-card small {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* Calculation Results */
+        .calculation-result {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #FFD700;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-value {
+            display: block;
+            font-size: 1.1rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Compatibility Table */
+        .table-dark {
+            background: linear-gradient(135deg, rgba(14, 38, 70, 0.9), rgba(22, 72, 143, 0.8));
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-dark th {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(37, 99, 235, 0.15));
+            color: #60A5FA;
+            font-weight: 600;
+            border: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 12px;
+        }
+
+        .table-dark td {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            padding: 10px 12px;
+        }
+
+        /* Günlük detay tablosu için özel stiller */
+        .table-dark tbody tr:nth-child(even) td {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .table-dark tbody tr:hover td {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 197, 253, 0.1)) !important;
+            color: #fff;
+            transform: translateY(-1px);
+            transition: all 0.3s ease;
+        }
+
+        .compatibility-row:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .badge.bg-success {
+            background: rgba(40, 167, 69, 0.8) !important;
+            color: #ffffff;
+        }
+
+        .badge.bg-danger {
+            background: rgba(220, 53, 69, 0.8) !important;
+            color: #ffffff;
+        }
+
+        /* Developer Card */
+        .developer-card {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 4rem 5rem 3rem 5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .developer-card h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        .developer-card p {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            font-size: 1.15rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            line-height: 1.8;
+            color: #f8f9fa;
+            text-align: left;
+        }
+
+        .developer-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: var(--neon-glow);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .developer-avatar {
+            font-size: 4rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+        }
+
+        .developer-card p {
+            text-align: left;
+            font-size: 1.05rem;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.8);
+        }
+
+        /* Success States */
+        .upload-success {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .upload-success .upload-icon {
+            color: #4CAF50;
+        }
+
+        /* Error States */
+        .upload-error {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .upload-error .upload-icon {
+            color: #f44336;
+        }
+
+        @media (max-width: 1100px) {
+            .developer-card {
+                padding: 2rem 1rem;
+                max-width: 99vw;
+            }
+            .about-content {
+                max-width: 99vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+
+
+        <!-- Authentication Gate -->
+        <div id="authGate" class="auth-gate">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <div class="logo-section">
+                        <i class="fas fa-solar-panel"></i>
+                        <h2>SolarBatarya</h2>
+                        <p>Güneş Enerjisi Depolamalı Sistem</p>
+                    </div>
+                </div>
+                <div class="auth-content">
+                    <h4>🔐 Güvenli Giriş Gerekli</h4>
+                    <p class="mb-4">EPİAŞ entegrasyonlu güneş enerjisi analiz sistemine erişmek için lütfen giriş yapın veya hesap oluşturun.</p>
+                    
+                    <div class="auth-buttons">
+                        <button type="button" class="btn btn-primary btn-lg me-2" onclick="showLoginModal()" style="z-index: 10001;">
+                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-lg" onclick="showRegisterModal()" style="z-index: 10001;">
+                            <i class="fas fa-user-plus me-2"></i>Hesap Oluştur
+                        </button>
+                    </div>
+                    
+                    <div class="auth-features mt-4">
+                        <h6>🚀 Sistem Özellikleri:</h6>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-chart-line"></i> Gerçek zamanlı EPİAŞ veri analizi</li>
+                            <li><i class="fas fa-battery-three-quarters"></i> Depolamalı sistem tasarımı</li>
+                            <li><i class="fas fa-calculator"></i> Gelir-gider hesaplamaları</li>
+                            <li><i class="fas fa-file-alt"></i> Detaylı raporlama</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Layout with Sidebar - PROTECTED -->
+        <div class="main-layout d-none" id="protectedContent">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-solar-panel me-2"></i>
+                    <h5>SolarBatarya</h5>
+                </div>
+                <div class="sidebar-nav">
+                    <button class="sidebar-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab">
+                        <i class="fas fa-upload"></i>
+                        <span>Veri Girişi</span>
+                    </button>
+                    <button class="sidebar-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analiz</span>
+                    </button>
+                    <button class="sidebar-link" id="design-tab" data-bs-toggle="tab" data-bs-target="#design" type="button" role="tab">
+                        <i class="fas fa-battery-three-quarters"></i>
+                        <span>Depolamalı Sistem</span>
+                    </button>
+                    <button class="sidebar-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Destek</span>
+                    </button>
+                    <button class="sidebar-link" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Hakkında</span>
+                    </button>
+                </div>
+                
+                <!-- Kullanıcı Durumu - Sidebar Alt -->
+                <div id="userStatus" class="sidebar-footer">
+                    <div id="loginSection" class="user-actions">
+                        <button type="button" class="btn btn-info btn-sm" onclick="showLoginModal()">
+                            <i class="fas fa-sign-in-alt me-1"></i>Giriş
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="showRegisterModal()">
+                            <i class="fas fa-user-plus me-1"></i>Kayıt
+                        </button>
+                    </div>
+                    <div id="userInfo" class="d-none user-info">
+                        <div class="user-welcome">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="currentUsername" class="username"></span>
+                        </div>
+                        <button type="button" class="btn btn-outline-light btn-sm logout-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-1"></i>Çıkış
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                
+                <!-- Hero Header -->
+                <div class="hero-header">
+                    <div class="logo-container">
+                        <img src="Logo.png" alt="Solar Batarya Logo" class="logo-image">
+                    </div>
+                    <h1 class="hero-title">Güneş Enerjisi Depolamalı Sistem</h1>
+                    <p class="hero-subtitle">EPİAŞ entegrasyonu ile gerçek zamanlı üretim ve gelir analizi</p>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="mainTabsContent">
+                    <!-- Upload Tab -->
+                    <div class="tab-pane fade show active" id="upload" role="tabpanel">
+                        <!-- Upload Section -->
+                        <div class="glass-card">
+                            <div class="text-center mb-4">
+                                <h3 class="text-white mb-3">
+                                    <i class="fas fa-upload me-2"></i>
+                                    Veri Yükleme
+                                </h3>
+                                <p class="text-white-50">Güneş enerjisi üretim verilerinizi ve EPİAŞ fiyat verilerinizi yükleyin</p>
+                            </div>
+
+                            <form id="analysisForm">
+                                <div class="row">
+                                    <!-- Production Data Upload -->
+                                    <div class="col-lg-6 mb-4">
+                                        <div class="upload-container">
+                                            <label class="form-label text-white mb-3">
+                                                <i class="fas fa-solar-panel me-2"></i>
+                                                Güneş Enerjisi Üretim Verileri
+                                            </label>
+                                            <div class="upload-area" id="uploadArea">
+                                                <div class="upload-icon">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                </div>
+                                                <div class="upload-text">Üretim CSV dosyanızı buraya sürükleyin</div>
+                                                <div class="upload-hint">veya tıklayarak seçin</div>
+                                                <input type="file" id="csvFile" accept=".csv" class="d-none" required>
+                                                <div id="productionFileName" class="mt-3 text-success"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- EPİAŞ Veri Kaynağı Seçimi -->
+                                    <div class="col-lg-6 mb-4">
+                                        <div class="upload-container">
+                                            <label class="form-label text-white mb-3">
+                                                <i class="fas fa-database me-2"></i>
+                                                EPİAŞ Veri Kaynağı
+                                            </label>
+                                            
+                                            <!-- Veri Kaynağı Seçimi -->
+                                            <div class="mb-3">
+                                                <div class="btn-group w-100" role="group">
+                                                    <input type="radio" class="btn-check" name="dataSource" id="builtinData" value="builtin" checked onchange="toggleDataSource()">
+                                                    <label class="btn btn-outline-light" for="builtinData">
+                                                        <i class="fas fa-database me-1"></i>Entegre
+                                                    </label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="dataSource" id="uploadData" value="upload" onchange="toggleDataSource()">
+                                                    <label class="btn btn-outline-light" for="uploadData">
+                                                        <i class="fas fa-upload me-1"></i>Yükle
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Built-in Veri Seçimi -->
+                                            <div id="builtinDataSection">
+                                                <div class="row g-2 mb-3">
+                                                    <div class="col-6">
+                                                        <label for="startDate" class="form-label text-white-50 small">Başlangıç:</label>
+                                                        <input type="date" class="form-control form-control-sm" id="startDate" value="2024-01-01" min="2024-01-01" max="2025-08-07" onchange="updateDateRange()">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label for="endDate" class="form-label text-white-50 small">Bitiş:</label>
+                                                        <input type="date" class="form-control form-control-sm" id="endDate" value="2024-12-31" min="2024-01-01" max="2025-08-07" onchange="updateDateRange()">
+                                                    </div>
+                                                </div>
+                                                
+                                                                    <button type="button" class="btn btn-success btn-sm w-100 mb-2" onclick="loadEpiasDataFromAPI()">
+                        <i class="fas fa-rocket me-1"></i>EPİAŞ Verilerini Yükle (DB)
+                    </button>
+                    
+                    <!-- Yeni Real-Time EPİAŞ Seçenekleri - ASKIYA ALINDI -->
+                    <div class="mt-3 p-3" style="background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2); display: none;">
+                        <h6 class="text-info mb-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-wifi me-1"></i>Gerçek Zamanlı EPİAŞ
+                        </h6>
+                        <button type="button" class="btn btn-info btn-sm w-100 mb-2" onclick="refreshTodayEpias()">
+                            <i class="fas fa-sync me-1"></i>Bugünkü Verileri Çek
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm w-100 mb-2" onclick="listAvailableEpiasDates()">
+                            <i class="fas fa-list me-1"></i>Mevcut Günler
+                        </button>
+                        <input type="date" class="form-control form-control-sm mb-2" id="customEpiasDate" style="font-size: 0.8rem;">
+                        <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="refreshCustomDateEpias()">
+                            <i class="fas fa-calendar me-1"></i>Özel Tarih Çek
+                        </button>
+                    </div>
+                                                <!-- Debug button kaldırıldı - production performance için -->
+                                                
+                                                <!-- Durum Göstergesi -->
+                                                <div id="builtinDataStatus" class="mt-2 d-none">
+                                                    <div class="text-success small">
+                                                        <i class="fas fa-check-circle me-1"></i>
+                                                        <span id="builtinDataInfo">Veriler yüklendi</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- CSV Upload Section -->
+                                            <div id="uploadDataSection" class="d-none">
+                                                <div class="upload-area" id="epiasUploadArea" ondrop="dropHandler(event, 'epias');" ondragover="dragOverHandler(event);" onclick="document.getElementById('epiasCsvFile').click();">
+                                                    <div class="upload-icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </div>
+                                                    <div class="upload-text">EPİAŞ fiyat CSV dosyanızı buraya sürükleyin</div>
+                                                    <div class="upload-hint">veya tıklayarak seçin</div>
+                                                    <input type="file" id="epiasCsvFile" accept=".csv" class="d-none" required>
+                                                    <div id="epiasFileName" class="mt-3 text-success"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Distribution Fee Selection -->
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="glass-card">
+                                            <h5 class="text-white mb-3">
+                                                <i class="fas fa-calculator me-2"></i>
+                                                Dağıtım Bedeli Seçimi
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="distributionFeeType" class="form-label text-white">Dağıtım Bedeli Türü:</label>
+                                                    <select id="distributionFeeType" class="form-select" onchange="updateDistributionFee()">
+                                                        <option value="gorevli">Görevli Tedarik Şirketinden Enerji Alan Tüketiciler</option>
+                                                        <option value="ozel">Özel Tedarikçiden Enerji Alan Tüketiciler</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="info-card">
+                                                        <h6 class="mb-2">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            Seçilen Dağıtım Bedeli
+                                                        </h6>
+                                                        <div id="distributionFeeDisplay" class="text-white">
+                                                            <strong>17,0239 kr/kWh</strong>
+                                                            <br>
+                                                            <small class="text-white-50">Görevli Tedarik Şirketinden Enerji Alan Tüketiciler için</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Storage Limit Selection -->
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="glass-card">
+                                            <h5 class="text-white mb-3">
+                                                <i class="fas fa-battery-three-quarters me-2"></i>
+                                                Depolama Sistemi Limit Ayarları
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="storageLimit" class="form-label text-white">Maksimum Depolama Kapasitesi (MWh):</label>
+                                                    <input type="number" id="storageLimit" class="form-control" value="10" min="0" step="0.1" onchange="updateStorageLimit()">
+                                                    <small class="text-white-50">Günlük maksimum depolanabilecek enerji miktarı</small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="gridDischargeLimit" class="form-label text-white">Şebekeye Maksimum Saatlik Basma Kapasitesi (MWh):</label>
+                                                    <input type="number" id="gridDischargeLimit" class="form-control" value="10" min="0" step="0.1" onchange="updateGridDischargeLimit()">
+                                                    <small class="text-white-50">Saatlik maksimum şebekeye basabileceğiniz enerji miktarı</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <div class="info-card">
+                                                        <h6 class="mb-2">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            Depolama Stratejisi
+                                                        </h6>
+                                                        <div class="text-white">
+                                                            <strong>Depolama Limit: <span id="storageLimitDisplay">10 MWh</span></strong>
+                                                            <br>
+                                                            <strong>Şebeke Basma Limit: <span id="gridDischargeLimitDisplay">10 MWh</span></strong>
+                                                            <br>
+                                                            <small class="text-white-50">• Depolanan enerji depolama limitini aşamaz</small><br>
+                                                            <small class="text-white-50">• Şebekeye saatlik maksimum basma limiti uygulanır</small><br>
+                                                            <small class="text-white-50">• Fazla enerji birden fazla saatte satılır</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Analysis Button -->
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-modern" onclick="performAnalysis(); return false;">
+                                        <i class="fas fa-calculator me-2"></i>
+                                        Analiz Başlat
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- File Format Information -->
+                        <div class="glass-card">
+                            <h5 class="text-white mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Dosya Formatları
+                            </h5>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="info-card">
+                                        <h6><i class="fas fa-solar-panel me-2"></i>Güneş Enerjisi Üretim CSV</h6>
+                                        <ul>
+                                            <li><strong>A Sütunu:</strong> Tarih ve saat (01/01/90 09:00)</li>
+                                            <li><strong>E Sütunu:</strong> Saatlik üretim (kWh) - EDirUse</li>
+                                            <li><strong>Format:</strong> PVSYST çıktısı</li>
+                                            <li><strong>Başlangıç:</strong> 14. satırdan itibaren</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="info-card">
+                                        <h6><i class="fas fa-chart-line me-2"></i>EPİAŞ Fiyat CSV</h6>
+                                        <ul>
+                                            <li><strong>A Sütunu:</strong> Tarih (1.01.2024)</li>
+                                            <li><strong>B Sütunu:</strong> Saat (09:00)</li>
+                                            <li><strong>C Sütunu:</strong> PTF fiyatı (TL/MWh)</li>
+                                            <li><strong>Kaynak:</strong> EPİAŞ resmi sitesi</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-secondary-modern" onclick="showEpiasInfo()">
+                                    <i class="fas fa-question-circle me-2"></i>
+                                    EPİAŞ Veri Formatı Hakkında
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Tab -->
+                    <div class="tab-pane fade" id="results" role="tabpanel">
+                        <div class="glass-card">
+                            <div class="text-center mb-4">
+                                <h3 class="text-white mb-3">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Analiz Sonuçları
+                                </h3>
+                                <p class="text-white-50">Yüklenen verilerin analiz sonuçları burada görüntülenecek</p>
+                            </div>
+                            
+                            <!-- Loading Indicator -->
+                            <div id="loading" class="loading-container" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <h5 class="text-white">Analiz Yapılıyor...</h5>
+                                <p class="text-white-50">Güneş enerjisi verileriniz işleniyor, lütfen bekleyin</p>
+                            </div>
+
+                            <!-- Results Section -->
+                            <div id="resultsSection" style="display: none;">
+                                <h3 class="text-white mb-4">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    📊 Analiz Özeti
+                                </h3>
+                                
+                                <!-- Ana Sonuçlar -->
+                                <div id="statsSection" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="totalRevenueResult">₺0</div>
+                                                <div class="stats-label">💰 Toplam Gelir</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="actualResult">0 MWh</div>
+                                                <div class="stats-label">⚡ Toplam Üretim</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="totalDaysResult">0 Gün</div>
+                                                <div class="stats-label">📅 Analiz Süresi</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Günlük Ortalama -->
+                                    <div class="row mt-3">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="avgDaily">0 MWh</div>
+                                                <div class="stats-label">📈 Ortalama Günlük Üretim</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="avgPrice">₺0</div>
+                                                <div class="stats-label">💵 Ortalama Fiyat (TL/MWh)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Monthly Selection -->
+                                <div id="monthlySelection" class="mb-4" style="display: none;">
+                                    <!-- JavaScript tarafından dinamik olarak oluşturulacak -->
+                                </div>
+
+                                <!-- Depolamalı Sistem Özeti -->
+                                <div id="storageComparison" class="mb-4" style="display: none;">
+                                    <h5 class="text-white mb-3">
+                                        <i class="fas fa-battery-three-quarters me-2"></i>
+                                        🔋 Depolamalı Sistem Özeti
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="storageRevenueResult">₺0</div>
+                                                <div class="stats-label">💰 Depolamalı Toplam Gelir</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="revenueIncreaseResult">₺0</div>
+                                                <div class="stats-label">📈 Ek Gelir</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="percentageIncreaseResult">%0</div>
+                                                <div class="stats-label">📊 Gelir Artış Oranı</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="stats-card">
+                                                <div class="stats-value" id="roiResult">%0</div>
+                                                <div class="stats-label">💎 Yatırım Getirisi (ROI)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <!-- Charts Section -->
+                                <div id="chartSection" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <div class="chart-container">
+                                                <h5 class="mb-3 text-white">
+                                                    <i class="fas fa-chart-line me-2"></i>
+                                                    Aylık Üretim Grafiği
+                                                </h5>
+                                                <canvas id="monthlyChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <div class="chart-container">
+                                                <h5 class="mb-3 text-white">
+                                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                                    Gelir Karşılaştırması (Normal vs Depolamalı)
+                                                </h5>
+                                                <canvas id="revenueChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div class="tab-pane fade" id="reports" role="tabpanel">
+                        <div class="glass-card">
+                            <div class="text-center mb-4">
+                                <h3 class="text-white mb-3">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    Raporlar
+                                </h3>
+                                <p class="text-white-50">Analiz sonuçlarınızı profesyonel raporlar halinde görüntüleyin</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="report-card">
+                                        <div class="report-icon">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </div>
+                                        <h5 class="text-white">Analiz Raporu</h5>
+                                        <p class="text-white-50">Detaylı analiz sonuçları ve grafikler</p>
+                                        <button class="btn btn-modern" onclick="generateAnalysisReport()">
+                                            <i class="fas fa-download me-2"></i>
+                                            Rapor Oluştur
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="report-card">
+                                        <div class="report-icon">
+                                            <i class="fas fa-table"></i>
+                                        </div>
+                                        <h5 class="text-white">Veri Raporu</h5>
+                                        <p class="text-white-50">Ham veriler ve hesaplamalar</p>
+                                        <button class="btn btn-modern" onclick="generateDataReport()">
+                                            <i class="fas fa-download me-2"></i>
+                                            Rapor Oluştur
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design Tab -->
+                    <div class="tab-pane fade" id="design" role="tabpanel">
+                        <div class="glass-card">
+                            <div class="text-center mb-4">
+                                <h3 class="text-white mb-3">
+                                    <i class="fas fa-battery-three-quarters me-2"></i>
+                                    Batarya Tasarım Hesaplayıcısı
+                                </h3>
+                                <p class="text-white-50">Prismatik hücrelerden konteyner tasarımına kadar detaylı batarya hesaplamaları</p>
+                            </div>
+                            
+                            <!-- Hücre Özellikleri -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-microchip me-2"></i>
+                                            Hücre Özellikleri (Prismatik Hücre)
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label text-white">Nominal Hücre Voltajı (V)</label>
+                                                <input type="number" class="form-control" id="cellNominalVoltage" value="3.2" min="0" step="0.1">
+                                                <small class="text-white-50">Hücre nominal voltajı</small>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label text-white">Maksimum Hücre Voltajı (V)</label>
+                                                <input type="number" class="form-control" id="cellMaxVoltage" value="3.65" min="0" step="0.1">
+                                                <small class="text-white-50">Hücre maksimum voltajı</small>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label text-white">Kesme Hücre Voltajı (V)</label>
+                                                <input type="number" class="form-control" id="cellCutoffVoltage" value="2.5" min="0" step="0.1">
+                                                <small class="text-white-50">Hücre kesme voltajı</small>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <label class="form-label text-white">Hücre Kapasitesi (Ah)</label>
+                                                <input type="number" class="form-control" id="cellCapacity" value="100" min="0" step="1">
+                                                <small class="text-white-50">Hücre kapasitesi</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 12S1P Konfigürasyonu -->
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            <span id="configTitle">12S1P Konfigürasyonu</span>
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">Seri Hücre Sayısı</label>
+                                            <input type="number" class="form-control" id="seriesCells" value="12" min="1" step="1">
+                                            <small class="text-white-50">Seri bağlı hücre sayısı</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">Paralel Hücre Sayısı</label>
+                                            <input type="number" class="form-control" id="parallelCells" value="1" min="1" step="1">
+                                            <small class="text-white-50">Paralel bağlı hücre sayısı</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">C-Rate</label>
+                                            <input type="number" class="form-control" id="cRate" value="1" min="0.1" step="0.1">
+                                            <small class="text-white-50">Şarj/deşarj oranı</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            <span id="configCalculationsTitle">12S1P Hesaplamaları</span>
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Nominal Voltaj:</span>
+                                                    <span class="result-value" id="packNominalVoltage">38.4 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Maksimum Voltaj:</span>
+                                                    <span class="result-value" id="packMaxVoltage">43.8 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Kesme Voltajı:</span>
+                                                    <span class="result-value" id="packCutoffVoltage">30.0 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Kapasite:</span>
+                                                    <span class="result-value" id="packCapacity">100 Ah</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Konteyner Tasarımı -->
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-4">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-box me-2"></i>
+                                            Konteyner Tasarımı
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">Seri Pack Sayısı</label>
+                                            <input type="number" class="form-control" id="containerSeriesPacks" value="32" min="1" step="1">
+                                            <small class="text-white-50">Konteyner içi seri pack sayısı</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">Paralel Pack Sayısı</label>
+                                            <input type="number" class="form-control" id="containerParallelPacks" value="3" min="1" step="1">
+                                            <small class="text-white-50">Konteyner içi paralel pack sayısı</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-white">Konteyner Sayısı</label>
+                                            <input type="number" class="form-control" id="containerCount" value="4" min="1" step="1">
+                                            <small class="text-white-50">Toplam konteyner sayısı</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            Konteyner Hesaplamaları
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Nominal Voltaj:</span>
+                                                    <span class="result-value" id="containerNominalVoltage">1228.8 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Maksimum Voltaj:</span>
+                                                    <span class="result-value" id="containerMaxVoltage">1401.6 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Kesme Voltajı:</span>
+                                                    <span class="result-value" id="containerCutoffVoltage">960.0 V</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 mb-2">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Kapasite:</span>
+                                                    <span class="result-value" id="containerCapacity">300 Ah</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sistem Hesaplamaları -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Sistem Hesaplamaları
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Depolanan Enerji (80% DOD):</span>
+                                                    <span class="result-value" id="storedEnergy">28,311.55 kWh</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Tam Güneşte Şarj Süresi:</span>
+                                                    <span class="result-value" id="chargingTime">CSV yüklenmedi</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Maksimum Yük Deşarj Süresi:</span>
+                                                    <span class="result-value" id="dischargeTime">2.83 Saat</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 mb-3">
+                                                <div class="calculation-result">
+                                                    <span class="result-label">Maksimum Deşarj Akımı:</span>
+                                                    <span class="result-value" id="maxDischargeCurrent">300.0 A</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Uyumluluk Kontrolü -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="design-card">
+                                        <h5 class="text-white mb-3">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            Uyumluluk Kontrolü
+                                        </h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-dark table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Parametre</th>
+                                                        <th>Formül</th>
+                                                        <th>Gerçek Değer</th>
+                                                        <th>Limit Değer</th>
+                                                        <th>Sonuç</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="compatibility-row" id="voltageMaxCheck">
+                                                        <td>Dizi Maksimum Gerilimi</td>
+                                                        <td>V_max ≤ V_DC_max</td>
+                                                        <td id="actualVoltageMax">1402 V</td>
+                                                        <td>1500 V</td>
+                                                        <td><span class="badge bg-success">Uygun</span></td>
+                                                    </tr>
+                                                    <tr class="compatibility-row" id="voltageMinCheck">
+                                                        <td>Dizi Minimum Gerilimi</td>
+                                                        <td>V_min ≥ V_DC_min</td>
+                                                        <td id="actualVoltageMin">960 V</td>
+                                                        <td>915 V</td>
+                                                        <td><span class="badge bg-success">Uygun</span></td>
+                                                    </tr>
+                                                    <tr class="compatibility-row" id="currentMaxCheck">
+                                                        <td>Dizi Maksimum Akımı</td>
+                                                        <td>A_max ≤ A_DC_max</td>
+                                                        <td id="actualCurrentMax">300 A</td>
+                                                        <td>4014 A</td>
+                                                        <td><span class="badge bg-success">Uygun</span></td>
+                                                    </tr>
+                                                    <tr class="compatibility-row" id="dcInputCheck">
+                                                        <td>DC Giriş Uyumluluğu</td>
+                                                        <td>K_DC_max ≤ M_DC_max</td>
+                                                        <td id="actualDcInput">24</td>
+                                                        <td>24</td>
+                                                        <td><span class="badge bg-success">Uygun</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-modern btn-lg" onclick="exportBatteryDesign()">
+                                    <i class="fas fa-download me-2"></i>
+                                    Rapor İndir
+                                </button>
+                                <p class="text-white-50 mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Değerler otomatik olarak güncellenir
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Tab -->
+                    <div class="tab-pane fade" id="about" role="tabpanel">
+                        <div class="glass-card">
+                            <div class="text-center mb-4">
+                                <h3 class="text-white mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Hakkında
+                                </h3>
+                                <p class="text-white-50">Proje hakkında bilgiler ve geliştirici</p>
+                            </div>
+                            
+                            <div class="about-content">
+                                <div class="row">
+                                    <div class="col-md-8 mx-auto">
+                                        <div class="developer-card text-center">
+                                            <div class="developer-avatar">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                            <h4 class="text-white mb-3">Şükrü YİĞİT</h4>
+                                            <p class="text-white-50 mb-4" style="line-height: 1.6; text-align: justify;">
+                                                Yaklaşık 4 yıldır güneş enerjisi sektöründe çeşitli arazi ve çatı projelerinde aktif olarak rol aldım. 
+                                                "Bilgi paylaştıkça büyür" felsefesini hayatım boyunca uyguladım ve sevdiğim işi yaparken 
+                                                sürekli öğrenmeye devam ediyorum. Günümüzde güneş enerjisi sektörünün evrim yönünün 
+                                                depolamalı sistemler üzerinde olduğunu görüyorum. Bu alanda neler yapabileceğimi 
+                                                düşündüğümde, bu analiz platformunu geliştirme kararı aldım. 
+                                                Beni takip etmeniz, hedeflerime ulaşmam için beni her zaman motive edecektir.
+                                            </p>
+                                            <div class="social-links">
+                                                <a href="https://www.youtube.com/@Sukruyigit" target="_blank" class="social-link youtube-link">
+                                                    <i class="fab fa-youtube"></i>
+                                                    <span>YouTube</span>
+                                                </a>
+                                                <a href="https://tr.linkedin.com/in/%C5%9E%C3%BCkr%C3%BC-yi%C4%9Fit-1090661b0/tr" target="_blank" class="social-link linkedin-link">
+                                                    <i class="fab fa-linkedin"></i>
+                                                    <span>LinkedIn</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <footer class="footer mt-5">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="glass-card">
+                                <small class="text-white-50">
+                                    © 2025 Şükrü Yiğit - Tüm hakları saklıdır
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <!-- Login & Register Modal -->
+    <div class="modal fade" id="authModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 10050;">
+        <div class="modal-dialog" style="z-index: 10051;">
+            <div class="modal-content" style="background: linear-gradient(135deg, #0e2646, #16488f); border: none; border-radius: 15px; z-index: 10052;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="authModalTitle">Kullanıcı Girişi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeAuthModal()" title="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Login Form -->
+                    <div id="loginForm">
+                        <form id="loginFormElement">
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Kullanıcı Adı veya E-posta</label>
+                                <input type="text" class="form-control" id="loginCredential" required style="border-radius: 10px;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Şifre</label>
+                                <input type="password" class="form-control" id="loginPassword" required style="border-radius: 10px;">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 mb-3" style="border-radius: 10px; font-weight: 600;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </button>
+                        </form>
+                        <div class="text-center">
+                            <small class="text-white-50">Hesabınız yok mu? </small>
+                            <button class="btn btn-link btn-sm text-info" onclick="switchToRegister()">Kayıt Ol</button>
+                        </div>
+                    </div>
+
+                    <!-- Register Form -->
+                    <div id="registerForm" style="display: none;">
+                        <form id="registerFormElement">
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="registerUsername" required style="border-radius: 10px;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">E-posta</label>
+                                <input type="email" class="form-control" id="registerEmail" required style="border-radius: 10px;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-white-50">Şifre</label>
+                                <input type="password" class="form-control" id="registerPassword" required minlength="6" style="border-radius: 10px;">
+                                <small class="text-white-50">En az 6 karakter</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mb-3" style="border-radius: 10px; font-weight: 600;">
+                                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                            </button>
+                        </form>
+                        <div class="text-center">
+                            <small class="text-white-50">Zaten hesabınız var mı? </small>
+                            <button class="btn btn-link btn-sm text-info" onclick="switchToLogin()">Giriş Yap</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
+
