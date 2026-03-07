@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function init() {
-      if (!supabaseHazir) {
+      if (!supabaseHazir || !supabase) {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(LEGACY_TOKEN_KEY);
         setToken("");
@@ -61,6 +61,10 @@ export function AuthProvider({ children }) {
 
     init();
 
+    if (!supabaseHazir || !supabase) {
+      return () => {};
+    }
+
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -73,7 +77,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function girisYap({ email, password }) {
-    if (!supabaseHazir) {
+    if (!supabaseHazir || !supabase) {
       throw new Error("Supabase ayarlari eksik. VITE_SUPABASE_ANON_KEY tanimlayin.");
     }
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -88,7 +92,7 @@ export function AuthProvider({ children }) {
   }
 
   async function kayitOl({ fullName, email, password }) {
-    if (!supabaseHazir) {
+    if (!supabaseHazir || !supabase) {
       throw new Error("Supabase ayarlari eksik. VITE_SUPABASE_ANON_KEY tanimlayin.");
     }
     const { data, error } = await supabase.auth.signUp({
@@ -111,7 +115,7 @@ export function AuthProvider({ children }) {
   }
 
   async function cikisYap() {
-    if (supabaseHazir) {
+    if (supabaseHazir && supabase) {
       await supabase.auth.signOut();
     }
     syncSession(null);
