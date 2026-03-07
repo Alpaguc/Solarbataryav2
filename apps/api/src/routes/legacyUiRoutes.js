@@ -2,7 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config/env");
+const { JWT_SECRET, SUPABASE_URL, SUPABASE_ANON_KEY } = require("../config/env");
 
 const router = express.Router();
 
@@ -11,17 +11,73 @@ const LEGACY_INDEX = path.join(PROJECT_ROOT, "index.html");
 const LEGACY_SCRIPT = path.join(PROJECT_ROOT, "script.js");
 const LEGACY_LOGO_SVG = path.join(PROJECT_ROOT, "solar-logo.svg");
 const LEGACY_LOGO_PNG = path.join(PROJECT_ROOT, "Logo.png");
+const tokenDogrulamaCache = new Map();
 
-function verifyLegacyToken(req, res, next) {
+function getTokenCacheSure(token) {
+  const decoded = jwt.decode(token);
+  if (decoded && decoded.exp) {
+    return Number(decoded.exp) * 1000;
+  }
+  return Date.now() + 5 * 60 * 1000;
+}
+
+function cachedeTokenGecerliMi(token) {
+  const sonKullanma = tokenDogrulamaCache.get(token);
+  if (!sonKullanma) {
+    return false;
+  }
+  if (sonKullanma <= Date.now()) {
+    tokenDogrulamaCache.delete(token);
+    return false;
+  }
+  return true;
+}
+
+async function supabaseTokenDogrula(token) {
+  if (!SUPABASE_URL) {
+    return false;
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`
+  };
+  if (SUPABASE_ANON_KEY) {
+    headers.apikey = SUPABASE_ANON_KEY;
+  }
+
+  const cevap = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers });
+  return cevap.ok;
+}
+
+async function verifyLegacyToken(req, res, next) {
   const token = String(req.query.token || "");
   if (!token) {
     res.status(401).send("Legacy arayuz icin token zorunludur.");
     return;
   }
 
+  if (cachedeTokenGecerliMi(token)) {
+    next();
+    return;
+  }
+
   try {
     jwt.verify(token, JWT_SECRET);
+    tokenDogrulamaCache.set(token, getTokenCacheSure(token));
     next();
+    return;
+  } catch (_err) {
+    // Supabase tokeni olma ihtimaline karsi ikinci dogrulama
+  }
+
+  try {
+    const supabaseGecerli = await supabaseTokenDogrula(token);
+    if (supabaseGecerli) {
+      tokenDogrulamaCache.set(token, getTokenCacheSure(token));
+      next();
+      return;
+    }
+    res.status(401).send("Token gecersiz.");
   } catch (_err) {
     res.status(401).send("Token gecersiz.");
   }

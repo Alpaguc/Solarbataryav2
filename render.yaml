@@ -17,6 +17,10 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      - key: SUPABASE_URL
+        value: https://bgmouixvyzguwnbozcpi.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
       - key: ADMIN_FULL_NAME
         value: Local Admin
       - key: ADMIN_EMAIL
