@@ -1331,44 +1331,10 @@
     <div class="container-fluid">
 
 
-        <!-- Authentication Gate -->
-        <div id="authGate" class="auth-gate">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <div class="logo-section">
-                        <i class="fas fa-solar-panel"></i>
-                        <h2>SolarBatarya</h2>
-                        <p>Güneş Enerjisi Depolamalı Sistem</p>
-                    </div>
-                </div>
-                <div class="auth-content">
-                    <h4>🔐 Güvenli Giriş Gerekli</h4>
-                    <p class="mb-4">EPİAŞ entegrasyonlu güneş enerjisi analiz sistemine erişmek için lütfen giriş yapın veya hesap oluşturun.</p>
-                    
-                    <div class="auth-buttons">
-                        <button type="button" class="btn btn-primary btn-lg me-2" onclick="showLoginModal()" style="z-index: 10001;">
-                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
-                        </button>
-                        <button type="button" class="btn btn-outline-light btn-lg" onclick="showRegisterModal()" style="z-index: 10001;">
-                            <i class="fas fa-user-plus me-2"></i>Hesap Oluştur
-                        </button>
-                    </div>
-                    
-                    <div class="auth-features mt-4">
-                        <h6>🚀 Sistem Özellikleri:</h6>
-                        <ul class="feature-list">
-                            <li><i class="fas fa-chart-line"></i> Gerçek zamanlı EPİAŞ veri analizi</li>
-                            <li><i class="fas fa-battery-three-quarters"></i> Depolamalı sistem tasarımı</li>
-                            <li><i class="fas fa-calculator"></i> Gelir-gider hesaplamaları</li>
-                            <li><i class="fas fa-file-alt"></i> Detaylı raporlama</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Authentication Gate kaldırıldı -->
 
         <!-- Main Layout with Sidebar - PROTECTED -->
-        <div class="main-layout d-none" id="protectedContent">
+        <div class="main-layout" id="protectedContent">
             <!-- Sidebar Navigation -->
             <div class="sidebar">
                 <div class="sidebar-header">
@@ -2194,65 +2160,7 @@
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
-    <!-- Login & Register Modal -->
-    <div class="modal fade" id="authModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true" style="z-index: 10050;">
-        <div class="modal-dialog" style="z-index: 10051;">
-            <div class="modal-content" style="background: linear-gradient(135deg, #0e2646, #16488f); border: none; border-radius: 15px; z-index: 10052;">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title text-white" id="authModalTitle">Kullanıcı Girişi</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeAuthModal()" title="Kapat"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Login Form -->
-                    <div id="loginForm">
-                        <form id="loginFormElement">
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Kullanıcı Adı veya E-posta</label>
-                                <input type="text" class="form-control" id="loginCredential" required style="border-radius: 10px;">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Şifre</label>
-                                <input type="password" class="form-control" id="loginPassword" required style="border-radius: 10px;">
-                            </div>
-                            <button type="submit" class="btn btn-success w-100 mb-3" style="border-radius: 10px; font-weight: 600;">
-                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
-                            </button>
-                        </form>
-                        <div class="text-center">
-                            <small class="text-white-50">Hesabınız yok mu? </small>
-                            <button class="btn btn-link btn-sm text-info" onclick="switchToRegister()">Kayıt Ol</button>
-                        </div>
-                    </div>
-
-                    <!-- Register Form -->
-                    <div id="registerForm" style="display: none;">
-                        <form id="registerFormElement">
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Kullanıcı Adı</label>
-                                <input type="text" class="form-control" id="registerUsername" required style="border-radius: 10px;">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">E-posta</label>
-                                <input type="email" class="form-control" id="registerEmail" required style="border-radius: 10px;">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Şifre</label>
-                                <input type="password" class="form-control" id="registerPassword" required minlength="6" style="border-radius: 10px;">
-                                <small class="text-white-50">En az 6 karakter</small>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 mb-3" style="border-radius: 10px; font-weight: 600;">
-                                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
-                            </button>
-                        </form>
-                        <div class="text-center">
-                            <small class="text-white-50">Zaten hesabınız var mı? </small>
-                            <button class="btn btn-link btn-sm text-info" onclick="switchToLogin()">Giriş Yap</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Auth modal tamamen kaldırıldı -->
 
     <script src="script.js"></script>
 </body>

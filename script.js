@@ -680,12 +680,7 @@ function updateGridDischargeLimit() {
 
 // Analiz Raporu Oluşturma Fonksiyonu
 function generateAnalysisReport() {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Rapor oluşturmak için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş zorunluluğu kaldırıldı
     if (!window.currentAnalysisResults) {
         showNotification('Önce analiz yapmanız gerekiyor!', 'warning');
         return;
@@ -1504,12 +1499,7 @@ function initializeForm() {
 
 // Perform analysis
 function performAnalysis() {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Analiz gerçekleştirmek için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş zorunluluğu kaldırıldı
     if (csvData.length === 0) {
         alert('Lütfen önce üretim CSV dosyası yükleyin!');
         return;
@@ -1577,7 +1567,13 @@ function performAnalysis() {
             }
             
             console.log(`🧮 calculateAnalysis çağrılıyor: ${dataToAnalyze.length} kayıt ile`);
-            analysisResults = calculateAnalysis(dataToAnalyze);
+            analysisResults = calculateAnalysis(dataToAnalyze) || {
+                totalRevenue: 0,
+                totalProduction: 0,
+                dailyProduction: {},
+                dailyRevenue: {},
+                dailyPrices: {}
+            };
             console.log(`📊 calculateAnalysis sonuçları:`, analysisResults);
             
             // Depolamalı sistem analizini hesapla
@@ -1741,12 +1737,7 @@ Not: Fiyatlar virgül ile ayrılmış ondalık sayılar olmalıdır.`);
 
 // Calculate analysis with EPİAŞ prices
 function calculateAnalysis(data) {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Analiz hesaplamalarına erişmek için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş kontrolü kaldırıldı
     console.log('🔍 CALCULATE ANALYSIS BAŞLIYOR...');
     console.log(`📊 Üretim veri sayısı: ${data.length}`);
     console.log(`📊 EPİAŞ veri durumu: ${epiasData ? epiasData.length : 'BOŞ!'}`);
@@ -1917,7 +1908,7 @@ function displayResults(results) {
         safeUpdateElement('totalDaysResult', results.totalDays + ' Gün');
         
         // Ortalama fiyat hesapla
-        const avgPrice = results.totalRevenue / results.actual;
+    const avgPrice = (results && results.actual > 0) ? (results.totalRevenue / results.actual) : 0;
         safeUpdateElement('avgPrice', '₺' + formatPrice(avgPrice));
         
         // Update statistics with revenue (güvenli şekilde)
@@ -2193,6 +2184,14 @@ function createStorageComparisonSummary(results) {
 
 // Depolamalı sistem analizi hesapla
 function calculateStorageAnalysis(results) {
+    // Koruma: results boş ise default yapıyı oluştur
+    if (!results || typeof results !== 'object') {
+        results = { totalRevenue: 0, dailyRevenue: {}, dailyProduction: {}, dailyPrices: {} };
+    }
+    results.totalRevenue = results.totalRevenue || 0;
+    results.dailyRevenue = results.dailyRevenue || {};
+    results.dailyProduction = results.dailyProduction || {};
+    results.dailyPrices = results.dailyPrices || {};
     // Kapasite durumunu sıfırla (sadece boşsa)
     if (Object.keys(CapacityState.factorByDate).length === 0) {
         console.log('🔄 Kapasite durumu sıfırlandı, analiz başlıyor...');
@@ -3809,12 +3808,7 @@ function createDailyDetailChart(monthlyData, selectedMonth) {
 
 // Gerçek zamanlı batarya tasarım hesaplamaları
 function calculateBatteryDesign() {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Batarya tasarımı hesaplamalarına erişmek için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş zorunluluğu kaldırıldı
     try {
         // Hücre özelliklerini al
         const cellNominalVoltage = parseFloat(document.getElementById('cellNominalVoltage').value) || 3.2;
@@ -4014,24 +4008,16 @@ async function loadEpiasDataFromAPI() {
             infoSpan.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>API\'den veriler yükleniyor (çok hızlı!)...';
         }
         
-        // GİRİŞ KONTROLÜ
-        if (!authToken) {
-            showNotification('EPİAŞ verilerine erişmek için önce giriş yapmanız gerekiyor!', 'warning');
-            showLoginModal();
-            return;
-        }
+        // Giriş kontrolü kaldırıldı – herkes yükleyebilir
         
         // API'den veri çek - full URL kullan (CORS çözümü)
         const baseUrl = window.location.protocol === 'file:' ? 'http://localhost:3001' : '';
         const apiUrl = `${baseUrl}/api/epias-data?startDate=${startDate}&endDate=${endDate}`;
         console.log(`📡 API çağrısı: ${apiUrl}`);
-        console.log('🔑 Token gönderiliyor:', authToken ? 'Mevcut' : 'Yok');
+        console.log('🔑 Token gönderilmeyecek (public erişim).');
         
         const response = await fetch(apiUrl, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
         
         if (!response.ok) {
@@ -4428,12 +4414,7 @@ function updateCompatibilityBadge(elementId, isCompatible) {
 
 // Batarya tasarım raporu oluşturma
 function exportBatteryDesign() {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Batarya tasarımını dışa aktarmak için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş zorunluluğu kaldırıldı
     try {
         const batteryDesign = localStorage.getItem('solarBataryaBatteryDesign');
         if (!batteryDesign) {
@@ -4523,12 +4504,7 @@ function exportBatteryDesign() {
 
 // Sayfa yüklendiğinde batarya tasarımını yükle
 function loadBatteryDesign() {
-    // Giriş kontrolü
-    if (!authToken) {
-        showNotification('❌ Batarya tasarımını yüklemek için giriş yapmalısınız', 'warning');
-        showLoginModal();
-        return;
-    }
+    // Giriş zorunluluğu kaldırıldı
     try {
         const savedDesign = localStorage.getItem('solarBataryaBatteryDesign');
         if (savedDesign) {
@@ -4710,26 +4686,13 @@ let authToken = null;
 
 // Sayfa yüklendiğinde kullanıcı durumunu kontrol et
 document.addEventListener('DOMContentLoaded', function() {
-    // Önce UI'yi gizle (güvenlik için)
-    updateUserInterface();
-    
-    // Kaydedilmiş token'ı kontrol et
-    const token = localStorage.getItem('authToken');
-    if (token) {
-        validateToken(token);
-    } else {
-        // Token yoksa kesinlikle giriş ekranını göster
-        console.log('🔒 Token bulunamadı, giriş gerekli');
-        updateUserInterface();
-    }
-    
-    // Form event listener'larını ekle
+    // Giriş zorunluluğu kaldırıldı: UI'yi doğrudan erişime aç
+    currentUser = null;
+    authToken = null;
+    updateUserInterface(true);
+
+    // Form event listener'larını ekle (isteyen yine kayıt/giriş yapabilir)
     setupAuthForms();
-    
-    // Debug: Global fonksiyon kontrolü
-    console.log('🔍 Fonksiyon kontrolü:');
-    console.log('showLoginModal:', typeof showLoginModal);
-    console.log('showRegisterModal:', typeof showRegisterModal);
 });
 
 // Token doğrulama
@@ -4787,85 +4750,17 @@ function setupAuthForms() {
 }
 
 // Login modal göster
-function showLoginModal() {
-    console.log('🔑 showLoginModal çağrıldı');
-    try {
-        const authModalElement = document.getElementById('authModal');
-        if (!authModalElement) {
-            console.error('❌ authModal elementi bulunamadı!');
-            return;
-        }
-        
-        document.getElementById('authModalTitle').textContent = 'Kullanıcı Girişi';
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
-        
-        // Modal'ı zorla göstermek için
-        authModalElement.style.display = 'block';
-        authModalElement.classList.add('show');
-        document.body.classList.add('modal-open');
-        
-        // Backdrop oluştur
-        let backdrop = document.querySelector('.modal-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            backdrop.style.zIndex = '10040';
-            document.body.appendChild(backdrop);
-        }
-        
-        console.log('✅ Login modal zorla gösterildi');
-    } catch (error) {
-        console.error('❌ Login modal hatası:', error);
-    }
-}
+// Login modal kaldırıldı
+function showLoginModal() {}
 
 // Register modal göster  
-function showRegisterModal() {
-    console.log('📝 showRegisterModal çağrıldı');
-    try {
-        const authModalElement = document.getElementById('authModal');
-        if (!authModalElement) {
-            console.error('❌ authModal elementi bulunamadı!');
-            return;
-        }
-        
-        document.getElementById('authModalTitle').textContent = 'Yeni Hesap Oluştur';
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'block';
-        
-        // Modal'ı zorla göstermek için
-        authModalElement.style.display = 'block';
-        authModalElement.classList.add('show');
-        document.body.classList.add('modal-open');
-        
-        // Backdrop oluştur
-        let backdrop = document.querySelector('.modal-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            backdrop.style.zIndex = '10040';
-            document.body.appendChild(backdrop);
-        }
-        
-        console.log('✅ Register modal zorla gösterildi');
-    } catch (error) {
-        console.error('❌ Register modal hatası:', error);
-    }
-}
+// Register modal kaldırıldı
+function showRegisterModal() {}
 
 // Form arası geçiş
-function switchToRegister() {
-    document.getElementById('authModalTitle').textContent = 'Yeni Hesap Oluştur';
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-}
+function switchToRegister() {}
 
-function switchToLogin() {
-    document.getElementById('authModalTitle').textContent = 'Kullanıcı Girişi';
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('registerForm').style.display = 'none';
-}
+function switchToLogin() {}
 
 // Kullanıcı kayıt
 async function registerUser(username, email, password) {
@@ -4952,7 +4847,7 @@ function clearAuth() {
 }
 
 // Kullanıcı arayüzünü güncelle
-function updateUserInterface() {
+function updateUserInterface(publicAccess = false) {
     const loginSection = document.getElementById('loginSection');
     const userInfo = document.getElementById('userInfo');
     const currentUsername = document.getElementById('currentUsername');
@@ -4971,12 +4866,9 @@ function updateUserInterface() {
         
         console.log('✅ Kullanıcı girişi doğrulandı, ana içerik gösteriliyor');
     } else {
-        // 🚨 GÜVENLİK: Kullanıcı girişi yok - tüm erişim engellendi
-        if (authGate) {
-            authGate.style.display = 'flex';
-            authGate.style.zIndex = '5000'; // En üstte kalmasını garantile
-        }
-        if (protectedContent) protectedContent.classList.add('d-none');
+        // Giriş yok: herkese açık erişim
+        if (authGate) authGate.style.display = 'none';
+        if (protectedContent) protectedContent.classList.remove('d-none');
         
         // Sidebar kullanıcı bilgilerini gizle
         if (loginSection) loginSection.classList.remove('d-none');
@@ -4993,7 +4885,7 @@ function updateUserInterface() {
             if (backdrop) backdrop.remove();
         }
         
-        console.log('🔒 GÜVENLIK: Kimlik doğrulamadan erişim engellendi');
+        console.log('✅ Giriş olmadan erişim açık');
     }
 
     // EPİAŞ butonlarının erişimini güncelle
@@ -5005,15 +4897,9 @@ function updateEpiasButtonsAccess() {
     const epiasButton = document.querySelector('button[onclick="loadEpiasDataFromAPI()"]');
     
     if (epiasButton) {
-        if (currentUser && authToken) {
-            epiasButton.disabled = false;
-            epiasButton.innerHTML = '<i class="fas fa-rocket me-1"></i>EPİAŞ Verilerini Yükle (DB)';
-            epiasButton.title = '';
-        } else {
-            epiasButton.disabled = false; // Buton aktif olsun ama içeride kontrol yapılsın
-            epiasButton.innerHTML = '<i class="fas fa-lock me-1"></i>EPİAŞ Verileri (Giriş Gerekli)';
-            epiasButton.title = 'EPİAŞ verilerine erişmek için giriş yapın';
-        }
+        epiasButton.disabled = false;
+        epiasButton.innerHTML = '<i class="fas fa-rocket me-1"></i>EPİAŞ Verilerini Yükle (DB)';
+        epiasButton.title = '';
     }
 }
 

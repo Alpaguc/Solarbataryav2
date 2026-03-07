@@ -1,29 +1,25 @@
 {
-  "dependencies": {
-    "@typescript-eslint/parser": "^8.38.0",
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2",
-    "node-cron": "^3.0.3",
-    "node-fetch": "^2.7.0",
-    "sqlite3": "^5.1.7",
-    "typescript": "^5.8.3"
-  },
-  "name": "solarbatarya",
-  "version": "1.0.0",
-  "description": "Bu proje, güneş enerjisi santrallerinin üretim verilerini analiz eden ve depolamalı sistem senaryolarını karşılaştıran kapsamlı bir web uygulamasıdır.",
-  "main": "epias-full-data.js",
+  "name": "solarbatarya-platform",
+  "private": true,
+  "version": "2.0.0",
+  "description": "SolarBatarya moduler monorepo yapisi (web + api + simulation core)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
-    "import-data": "node -e \"require('./backend/database').importEpiasData().then(r => console.log('Done:', r)).catch(e => console.error('Error:', e))\"",
-    "epias:refresh": "curl -X POST http://localhost:3001/api/refresh/epias -H 'Content-Type: application/json'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace @solarbatarya/api",
+    "dev:web": "npm run dev --workspace @solarbatarya/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:seed": "npm run db:seed --workspace @solarbatarya/api",
+    "admin:ensure": "npm run admin:ensure --workspace @solarbatarya/api",
+    "compare:legacy": "npm run compare:legacy --workspace @solarbatarya/api",
+    "start:api": "npm run start --workspace @solarbatarya/api",
+    "legacy:start": "node backend/server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
 }

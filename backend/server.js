@@ -58,7 +58,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // EPİAŞ verileri çekme
-app.get('/api/epias-data', authenticateToken, async (req, res) => {
+app.get('/api/epias-data', async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         
@@ -245,44 +245,10 @@ app.get('/api/epias/list', async (req, res) => {
 
 // === AUTHENTICATION MIDDLEWARE ===
 
-// JWT Token doğrulama middleware'i
+// JWT Token doğrulama middleware'i (DEVRE DIŞI - herkese açık)
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-        return res.status(401).json({ 
-            ok: false, 
-            error: 'Erişim reddedildi. Giriş yapmanız gerekiyor.' 
-        });
-    }
-
-    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ 
-                ok: false, 
-                error: 'Geçersiz token. Lütfen tekrar giriş yapın.' 
-            });
-        }
-
-        try {
-            const user = await getUserById(decoded.userId);
-            if (!user) {
-                return res.status(404).json({ 
-                    ok: false, 
-                    error: 'Kullanıcı bulunamadı.' 
-                });
-            }
-            
-            req.user = user;
-            next();
-        } catch (error) {
-            res.status(500).json({ 
-                ok: false, 
-                error: 'Kullanıcı doğrulama hatası' 
-            });
-        }
-    });
+    // Giriş zorunluluğu kaldırıldı; tüm istekleri kabul et
+    return next();
 }
 
 // === AUTHENTICATION ENDPOINTS ===
@@ -412,11 +378,9 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Kullanıcı bilgilerini getir
-app.get('/api/auth/me', authenticateToken, (req, res) => {
-    res.json({
-        ok: true,
-        user: req.user
-    });
+app.get('/api/auth/me', (req, res) => {
+    // Kimlik doğrulama devre dışı: anonim kullanıcı döndür
+    res.json({ ok: true, user: null });
 });
 
 // Sistem istatistikleri
