@@ -1,66 +1,120 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getMe, login, register, setAuthToken } from "../api/client";
+import { supabase, supabaseHazir } from "../lib/supabase";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "solarbatarya_token";
 const LEGACY_TOKEN_KEY = "authToken";
+
+function normalizeEmail(email) {
+  return String(email || "")
+    .trim()
+    .toLowerCase();
+}
+
+function mapSupabaseUser(user) {
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user.id,
+    fullName: user.user_metadata?.full_name || user.email?.split("@")[0] || "Kullanici",
+    email: user.email || "",
+    role: user.user_metadata?.role || "user"
+  };
+}
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY) || "");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  function syncSession(session) {
+    const oturumToken = session?.access_token || "";
+    if (oturumToken) {
+      localStorage.setItem(STORAGE_KEY, oturumToken);
+      localStorage.setItem(LEGACY_TOKEN_KEY, oturumToken);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_TOKEN_KEY);
+    }
+    setToken(oturumToken);
+    setUser(mapSupabaseUser(session?.user || null));
+  }
+
   useEffect(() => {
     async function init() {
-      if (!token) {
-        setAuthToken(null);
+      if (!supabaseHazir) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LEGACY_TOKEN_KEY);
+        setToken("");
+        setUser(null);
         setLoading(false);
         return;
       }
-      try {
-        setAuthToken(token);
-        localStorage.setItem(LEGACY_TOKEN_KEY, token);
-        const me = await getMe();
-        setUser(me);
-      } catch (_err) {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(LEGACY_TOKEN_KEY);
-        setAuthToken(null);
-        setToken("");
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+      syncSession(session);
+      setLoading(false);
     }
+
     init();
-  }, [token]);
 
-  async function girisYap(payload) {
-    const sonuc = await login(payload);
-    localStorage.setItem(STORAGE_KEY, sonuc.token);
-    localStorage.setItem(LEGACY_TOKEN_KEY, sonuc.token);
-    setToken(sonuc.token);
-    setAuthToken(sonuc.token);
-    setUser(sonuc.user);
-    return sonuc.user;
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncSession(session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function girisYap({ email, password }) {
+    if (!supabaseHazir) {
+      throw new Error("Supabase ayarlari eksik. VITE_SUPABASE_ANON_KEY tanimlayin.");
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: normalizeEmail(email),
+      password: String(password || "")
+    });
+    if (error) {
+      throw new Error(error.message || "Giris basarisiz.");
+    }
+    syncSession(data.session);
+    return mapSupabaseUser(data.user);
   }
 
-  async function kayitOl(payload) {
-    const sonuc = await register(payload);
-    localStorage.setItem(STORAGE_KEY, sonuc.token);
-    localStorage.setItem(LEGACY_TOKEN_KEY, sonuc.token);
-    setToken(sonuc.token);
-    setAuthToken(sonuc.token);
-    setUser(sonuc.user);
-    return sonuc.user;
+  async function kayitOl({ fullName, email, password }) {
+    if (!supabaseHazir) {
+      throw new Error("Supabase ayarlari eksik. VITE_SUPABASE_ANON_KEY tanimlayin.");
+    }
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizeEmail(email),
+      password: String(password || ""),
+      options: {
+        data: {
+          full_name: String(fullName || "").trim()
+        }
+      }
+    });
+    if (error) {
+      throw new Error(error.message || "Kayit basarisiz.");
+    }
+    if (!data.session) {
+      throw new Error("Kayit olustu. Lutfen e-posta adresinize gelen dogrulama baglantisini onaylayin.");
+    }
+    syncSession(data.session);
+    return mapSupabaseUser(data.user);
   }
 
-  function cikisYap() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LEGACY_TOKEN_KEY);
-    setAuthToken(null);
-    setToken("");
-    setUser(null);
+  async function cikisYap() {
+    if (supabaseHazir) {
+      await supabase.auth.signOut();
+    }
+    syncSession(null);
   }
 
   const value = useMemo(
@@ -68,6 +122,7 @@ export function AuthProvider({ children }) {
       token,
       user,
       loading,
+      supabaseHazir,
       isAuthenticated: Boolean(token && user),
       girisYap,
       kayitOl,

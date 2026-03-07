@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
-  const { isAuthenticated, girisYap, kayitOl } = useAuth();
+  const { isAuthenticated, girisYap, kayitOl, supabaseHazir } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState("login");
@@ -33,6 +33,9 @@ function LoginPage() {
     setHata("");
     setLoading(true);
     try {
+      if (!supabaseHazir) {
+        throw new Error("Supabase ayarlari eksik. Netlify ortam degiskenlerine SUPABASE bilgilerini ekleyin.");
+      }
       if (mode === "login") {
         await girisYap({ email: form.email, password: form.password });
       } else {
@@ -44,7 +47,7 @@ function LoginPage() {
       }
       navigate("/app", { replace: true });
     } catch (err) {
-      setHata(err?.response?.data?.error || "Giris islemi basarisiz.");
+      setHata(err?.message || err?.response?.data?.error || "Giris islemi basarisiz.");
     } finally {
       setLoading(false);
     }
@@ -55,6 +58,9 @@ function LoginPage() {
       <div className="auth-card glass-card">
         <h2>{mode === "login" ? "Kullanici Girisi" : "Hesap Olustur"}</h2>
         <p>{mode === "login" ? "Simulasyon alanina erismek icin giris yapin." : "Hizli kayit ile proje alani acin."}</p>
+        {!supabaseHazir && (
+          <div className="hata-kutu">Supabase degiskenleri eksik. VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY tanimlayin.</div>
+        )}
 
         <div className="auth-mode-switch">
           <button
