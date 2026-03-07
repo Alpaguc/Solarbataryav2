@@ -1,7 +1,17 @@
 import axios from "axios";
 
+function getApiBaseUrl() {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (window.location.hostname === "localhost") {
+    return "http://localhost:3001/api";
+  }
+  return "https://solarbataryav2-api.onrender.com/api";
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+  baseURL: getApiBaseUrl(),
   timeout: 30000
 });
 
