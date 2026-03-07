@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: solarbataryav2-api
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm install
+    startCommand: npm run start:api
+    disk:
+      name: solarbataryav2-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://solarbatarya.com.tr,https://www.solarbatarya.com.tr
+      - key: DB_PATH
+        value: /var/data/solarbatarya.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_FULL_NAME
+        value: Local Admin
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
