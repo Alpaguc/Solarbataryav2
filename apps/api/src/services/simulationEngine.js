@@ -361,40 +361,81 @@ function runSimulation(pvsystData, epiasData, battery, strategy, params) {
 
 /**
  * PVSyst CSV parse fonksiyonu
- * Ayraç: ';', ilk 13 satır başlık, tarih kolonu atlanır
- * Kritik kolonlar: EArray (DC kW), E_Grid (AC kW)
+ * E_Grid = sahaya verilen AC enerji (kWh)
+ * EArray = DC uretim (kWh, opsiyonel)
+ * Tum kolonlari dinamik tespit eder
  */
 function parsePvsystCsv(csvText) {
   const lines = csvText.split(/\r?\n/);
 
   let headerLineIdx = -1;
-  for (let i = 0; i < Math.min(20, lines.length); i++) {
-    if (lines[i].includes("EArray") || lines[i].includes("E_Grid")) {
+  for (let i = 0; i < Math.min(30, lines.length); i++) {
+    if (
+      (lines[i].includes("E_Grid") || lines[i].includes("EArray")) &&
+      lines[i].includes(";")
+    ) {
       headerLineIdx = i;
       break;
     }
   }
 
   if (headerLineIdx === -1) {
-    throw new Error("PVSyst CSV başlık satırı bulunamadı (EArray/E_Grid).");
+    throw new Error("PVSyst CSV baslik satiri bulunamadi (E_Grid/EArray).");
   }
 
-  const headers = lines[headerLineIdx].split(";").map(h => h.trim());
-  const dcIdx = headers.findIndex(h => h === "EArray" || h === "GlobInc" || h === "EArray (kWh)");
-  const acIdx = headers.findIndex(h => h === "E_Grid" || h === "E_Grid (kWh)");
+  const headers = lines[headerLineIdx]
+    .split(";")
+    .map(h => h.trim().replace(/^"/, "").replace(/"$/, ""));
 
-  if (acIdx === -1) throw new Error("E_Grid kolonu bulunamadı.");
+  const unitLine = lines[headerLineIdx + 1] || "";
+  const units = unitLine
+    .split(";")
+    .map(u => u.trim().toLowerCase());
+
+  function colIdx(...names) {
+    for (const n of names) {
+      const idx = headers.findIndex(h => h.toLowerCase() === n.toLowerCase());
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  }
+
+  function scaleFactor(idx) {
+    if (idx < 0) return 1;
+    const u = units[idx] || "";
+    if (u.includes("wh") && !u.includes("kwh")) return 0.001;
+    return 1;
+  }
+
+  const eGridIdx  = colIdx("E_Grid", "EGrid");
+  const eArrayIdx = colIdx("EArray");
+
+  if (eGridIdx === -1) {
+    throw new Error(`E_Grid kolonu bulunamadi. Mevcut: ${headers.join(", ")}`);
+  }
+
+  const scaleGrid  = scaleFactor(eGridIdx);
+  const scaleArray = scaleFactor(eArrayIdx);
 
   const data = [];
   for (let i = headerLineIdx + 2; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    const cols = line.split(";");
-    const dcKw = dcIdx >= 0 ? (parseFloat(cols[dcIdx]?.replace(",", ".")) || 0) : 0;
-    const acKw = parseFloat(cols[acIdx]?.replace(",", ".")) || 0;
+    const c = line.split(";").map(v => v.trim().replace(",", "."));
 
-    data.push({ hourIndex: data.length, dcKw, acKw });
+    const eGridKwh  = (parseFloat(c[eGridIdx])  || 0) * scaleGrid;
+    const eArrayKwh = eArrayIdx >= 0 ? (parseFloat(c[eArrayIdx]) || 0) * scaleArray : eGridKwh;
+
+    // Eski alanlarla uyumluluk: dcKw = eArray, acKw = eGrid
+    data.push({
+      hourIndex: data.length,
+      dcKw: eArrayKwh,
+      acKw: eGridKwh,
+      eArrayKwh,
+      eGridKwh
+    });
+
     if (data.length >= 8760) break;
   }
 

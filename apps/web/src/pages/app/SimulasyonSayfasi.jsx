@@ -215,6 +215,7 @@ function SimulasyonSayfasi() {
 
 /**
  * In-memory PVSyst data'dan minimal CSV olustur (backend parse edebilmesi icin)
+ * eArrayKwh = DC uretim, eGridKwh = sahaya AC enerji
  */
 function buildPvsystCsv(pvsystData) {
   const header = "Date Hour;EArray;E_Grid";
@@ -227,7 +228,9 @@ function buildPvsystCsv(pvsystData) {
   ];
   for (const h of pvsystData) {
     const saat = String(h.hourIndex % 24).padStart(2, "0");
-    lines.push(`1.01.1990 ${saat}:00;${h.dcKw.toFixed(3)};${h.acKw.toFixed(3)}`);
+    const eArray = (h.eArrayKwh ?? h.dcKw ?? 0).toFixed(3);
+    const eGrid  = (h.eGridKwh  ?? h.acKw ?? 0).toFixed(3);
+    lines.push(`1.01.1990 ${saat}:00;${eArray};${eGrid}`);
   }
   return lines.join("\n");
 }
