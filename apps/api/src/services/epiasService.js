@@ -8,6 +8,32 @@ class EpiasError extends Error {
   }
 }
 
+function getIstanbulNow() {
+  const parcalar = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false
+  }).formatToParts(new Date());
+
+  const getir = (tip) => parcalar.find((p) => p.type === tip)?.value || "";
+  return {
+    tarih: `${getir("year")}-${getir("month")}-${getir("day")}`,
+    saat: Number(getir("hour") || 0)
+  };
+}
+
+function dateMinusDays(isoDate, days) {
+  const [y, m, d] = String(isoDate)
+    .split("-")
+    .map((n) => Number(n));
+  const utcDate = new Date(Date.UTC(y, m - 1, d));
+  utcDate.setUTCDate(utcDate.getUTCDate() - days);
+  return utcDate.toISOString().slice(0, 10);
+}
+
 function validateDateInput(startDate, endDate) {
   const tarihDeseni = /^\d{4}-\d{2}-\d{2}$/;
   if (!startDate || !endDate) {
@@ -33,11 +59,9 @@ async function getEpiasData(startDate, endDate) {
 }
 
 async function getEpiasDateRange() {
-  const bugun = new Date();
-  const bitis = bugun.toISOString().slice(0, 10);
-  const baslangicTarih = new Date(bugun);
-  baslangicTarih.setDate(bugun.getDate() - 7);
-  const baslangic = baslangicTarih.toISOString().slice(0, 10);
+  const { tarih: istanbulBugun, saat: istanbulSaat } = getIstanbulNow();
+  const bitis = istanbulSaat < 14 ? dateMinusDays(istanbulBugun, 1) : istanbulBugun;
+  const baslangic = dateMinusDays(bitis, 7);
 
   // Canli servis kullandigimiz icin burada "onerilen sorgu araligi" donuyoruz.
   const row = {

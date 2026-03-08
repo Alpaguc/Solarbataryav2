@@ -28,6 +28,7 @@ module.exports = {
   EPIAS_AUTH_URL: process.env.EPIAS_AUTH_URL || "https://giris.epias.com.tr/cas/v1/tickets",
   EPIAS_USERNAME: process.env.EPIAS_USERNAME || "",
   EPIAS_PASSWORD: process.env.EPIAS_PASSWORD || "",
+  EPIAS_ALLOW_PUBLIC_FALLBACK: String(process.env.EPIAS_ALLOW_PUBLIC_FALLBACK || "false").toLowerCase() === "true",
   EPIAS_REQUEST_TIMEOUT_MS: Number(process.env.EPIAS_REQUEST_TIMEOUT_MS || 60000),
   ADMIN_FULL_NAME: process.env.ADMIN_FULL_NAME || "Local Admin",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "admin@solarbatarya.local",

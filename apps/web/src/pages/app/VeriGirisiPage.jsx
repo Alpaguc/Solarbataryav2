@@ -101,7 +101,7 @@ function VeriGirisiPage() {
         setEpiasMesaj(`${kayitSayisi} EPİAŞ kaydı alındı.`);
       }
     } catch (err) {
-      setHata(err?.response?.data?.error || "EPİAŞ verisi alınamadı.");
+      setHata(err?.response?.data?.error || err?.message || "EPİAŞ verisi alınamadı.");
     } finally {
       setEpiasLoading(false);
     }

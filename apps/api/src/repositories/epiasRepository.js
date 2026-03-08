@@ -4,6 +4,7 @@ const {
   EPIAS_AUTH_URL,
   EPIAS_USERNAME,
   EPIAS_PASSWORD,
+  EPIAS_ALLOW_PUBLIC_FALLBACK,
   EPIAS_REQUEST_TIMEOUT_MS
 } = require("../config/env");
 
@@ -103,6 +104,28 @@ function hasAuthErrorInPayload(payload) {
     mesaj.includes("forbidden") ||
     mesaj.includes("kimlik")
   );
+}
+
+function extractEpiasPayloadErrorMessage(payload) {
+  if (!payload || typeof payload !== "object") {
+    return "";
+  }
+  const hataListesi = Array.isArray(payload.errors) ? payload.errors : [];
+  const ilkHata = hataListesi.find((item) => item && typeof item === "object");
+  if (ilkHata?.errorMessage) {
+    return String(ilkHata.errorMessage);
+  }
+
+  const mesajlar = [
+    payload.message,
+    payload.error,
+    payload.errorMessage,
+    payload.successMessage,
+    payload?.body?.message,
+    payload?.body?.error,
+    payload?.body?.errorMessage
+  ].filter(Boolean);
+  return mesajlar.length ? String(mesajlar[0]) : "";
 }
 
 function formatTrDateFromIso(isoDate) {
@@ -349,7 +372,12 @@ async function fetchEpiasRowsWithAuth(startDate, endDate) {
     }
 
     if (!response.ok) {
-      throw createEpiasError(`EPİAŞ MCP servisi hata döndü (${response.status}).`);
+      const epiasMesaji = extractEpiasPayloadErrorMessage(payload);
+      throw createEpiasError(
+        epiasMesaji
+          ? `EPİAŞ MCP servisi hata döndü (${response.status}): ${epiasMesaji}`
+          : `EPİAŞ MCP servisi hata döndü (${response.status}).`
+      );
     }
     if (!payload) {
       throw createEpiasError("EPİAŞ MCP servis cevabı JSON formatında değil.");
@@ -387,13 +415,18 @@ async function fetchEpiasRowsFromPublicService(startDate, endDate) {
       throw createEpiasError("EPİAŞ public servisi giriş sayfası döndü. EPIAS kullanıcı bilgileriyle TGT akışını kullanın.");
     }
 
-    if (!response.ok) {
-      throw createEpiasError(`EPİAŞ public servisi hata döndü (${response.status}).`);
-    }
-
     const payload = parseJson(text);
     if (!payload) {
       throw createEpiasError("EPİAŞ public servis cevabı JSON formatında değil.");
+    }
+
+    if (!response.ok) {
+      const epiasMesaji = extractEpiasPayloadErrorMessage(payload);
+      throw createEpiasError(
+        epiasMesaji
+          ? `EPİAŞ public servisi hata döndü (${response.status}): ${epiasMesaji}`
+          : `EPİAŞ public servisi hata döndü (${response.status}).`
+      );
     }
 
     return extractRowsFromPayload(payload);
@@ -417,6 +450,18 @@ async function fetchEpiasRows(startDate, endDate) {
       return await fetchEpiasRowsWithAuth(startDate, endDate);
     } catch (error) {
       authError = error;
+    }
+  }
+
+  if (!EPIAS_ALLOW_PUBLIC_FALLBACK) {
+    if (!authAktif) {
+      throw createEpiasError(
+        "EPİAŞ kullanıcı bilgisi eksik. EPIAS_USERNAME ve EPIAS_PASSWORD tanımlayın ya da EPIAS_ALLOW_PUBLIC_FALLBACK=true yapın.",
+        400
+      );
+    }
+    if (authError) {
+      throw authError;
     }
   }
 
