@@ -399,6 +399,33 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.alt-bilgi {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.veri-kaynak-kutu {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.veri-kaynak-kutu small {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.bilgi-kutu {
+  border: 1px solid rgba(56, 189, 248, 0.42);
+  border-radius: 10px;
+  background: rgba(14, 165, 233, 0.16);
+  color: #e6f7ff;
+  padding: 10px;
+}
+
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);

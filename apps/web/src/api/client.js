@@ -68,6 +68,11 @@ export async function getSolarProfiles() {
   return data.data;
 }
 
+export async function getEpiasData(params) {
+  const { data } = await api.get("/epias-data", { params });
+  return data;
+}
+
 export async function runSimulation(payload) {
   const { data } = await api.post("/simulations", payload);
   return data.data;

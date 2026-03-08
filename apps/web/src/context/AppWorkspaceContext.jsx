@@ -2,6 +2,15 @@ import { createContext, useContext, useMemo, useState } from "react";
 
 const AppWorkspaceContext = createContext(null);
 
+function bugunIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function yilBasiIso() {
+  const now = new Date();
+  return `${now.getFullYear()}-01-01`;
+}
+
 const HESAPLAMA_YONTEMLERI = [
   {
     code: "standart_dod",
@@ -32,7 +41,12 @@ const varsayilanVeriGirisi = {
   kuruluGucKw: 5000,
   yillikUretimMwh: 9200,
   yillikTuketimMwh: 8600,
-  bazEnerjiFiyatiTryMwh: 2850
+  bazEnerjiFiyatiTryMwh: 2850,
+  pvsystKayitSayisi: 0,
+  pvsystDosyaAdi: "",
+  epiasKayitSayisi: 0,
+  epiasStartDate: yilBasiIso(),
+  epiasEndDate: bugunIso()
 };
 
 const varsayilanDepolamaliSistem = {
