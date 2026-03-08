@@ -218,13 +218,20 @@ function computeKpis(hourlyResults, battery, financialParams) {
   };
 }
 
+/** Yil icinde ay sinirlari (saat indeksi): Ocak 0-743, Subat 744-1415, ... (artik yil degil) */
+const AY_SAAT_SINIRLARI = [0, 744, 1416, 2160, 2880, 3624, 4344, 5088, 5832, 6552, 7296, 8016, 8760];
+
+function hourToMonthIndex(hourIndex) {
+  for (let m = 0; m < 12; m++) {
+    if (hourIndex >= AY_SAAT_SINIRLARI[m] && hourIndex < AY_SAAT_SINIRLARI[m + 1]) return m;
+  }
+  return 11;
+}
+
 /**
  * Ana simülasyon fonksiyonu
- * @param {Array} pvsystData - [{hourIndex, dcKw, acKw}] 8760 eleman
- * @param {Array} epiasData  - [{hourIndex, priceTryMwh}] 8760 eleman
- * @param {Object} battery   - batarya özellikleri
- * @param {string} strategy  - 'arbitraj' | 'peak_shaving' | 'price_threshold'
- * @param {Object} params    - strateji parametreleri + finansal parametreler
+ * pvsystData: CSV saatlik (1 satir = 1 saat, tarih-gun-saat sirasi). epiasData: 1 yillik saatlik fiyatlar.
+ * Eslesme: h. saat (0..8759) = ayni gun + saat; yil (ornegin PVsyst 1990) kullanilmaz.
  */
 function runSimulation(pvsystData, epiasData, battery, strategy, params) {
   const n = Math.min(pvsystData.length, epiasData.length, 8760);
@@ -252,8 +259,9 @@ function runSimulation(pvsystData, epiasData, battery, strategy, params) {
     const pv = pvsystData[h];
     const ep = epiasData[h];
 
-    const dcKw = pv.dcKw || 0;
-    const acKw = pv.acKw || 0;
+    // Saatlik degerler: negatif (sebekeden cekim) = 0 uretim kabul
+    const dcKw = Math.max(0, pv.dcKw || 0);
+    const acKw = Math.max(0, pv.acKw || 0);
     const priceTryMwh = ep.priceTryMwh || 0;
 
     // Clipping: DC inverter limitini aşan kısım
@@ -310,9 +318,9 @@ function runSimulation(pvsystData, epiasData, battery, strategy, params) {
     const revenueTry = (dischargeKw - chargeKw) * (priceTryMwh / 1000);
     cumulativeRevenue += revenueTry;
 
-    // Ay indeksi (0..11)
-    const monthIdx = Math.floor(h / 730);
-    if (monthIdx < 12) {
+    // Ay indeksi (0..11): Ocak 744 saat, Subat 672, Mart 744, ...
+    const monthIdx = hourToMonthIndex(h);
+    if (monthIdx >= 0 && monthIdx < 12) {
       monthlyData[monthIdx].revenueTry += revenueTry;
       monthlyData[monthIdx].chargeKwh += chargeKw;
       monthlyData[monthIdx].dischargeKwh += dischargeKw;
@@ -360,11 +368,14 @@ function runSimulation(pvsystData, epiasData, battery, strategy, params) {
 }
 
 /**
- * PVSyst CSV parse fonksiyonu
- * E_Grid = sahaya verilen AC enerji (kWh)
- * EArray = DC uretim (kWh, opsiyonel)
- * Tum kolonlari dinamik tespit eder
+ * PVSyst saatlik CSV parse
+ * Yapi: Baslik satirinda tarih, EArray (D), E_Grid (E). Birim satiri sonra. Veri 14. satirdan (1-based) baslar.
+ * A sutunu = tarih (gg.aa.yyyy ss:dd), her satir = 1 saat; E sutunu = E_Grid (uretim), D = EArray.
+ * Birim "kW" = o saatteki enerji (kWh) kabul.
  */
+const PVSYST_DATA_START_ROW_1BASED = 14;
+const TARIH_SAAT_REGEX = /^\d{1,2}\.\d{1,2}\.\d{4}\s+\d{1,2}:\d{2}/;
+
 function parsePvsystCsv(csvText) {
   const lines = csvText.split(/\r?\n/);
 
@@ -372,6 +383,7 @@ function parsePvsystCsv(csvText) {
   for (let i = 0; i < Math.min(30, lines.length); i++) {
     if (
       (lines[i].includes("E_Grid") || lines[i].includes("EArray")) &&
+      lines[i].includes("tarih") &&
       lines[i].includes(";")
     ) {
       headerLineIdx = i;
@@ -380,7 +392,7 @@ function parsePvsystCsv(csvText) {
   }
 
   if (headerLineIdx === -1) {
-    throw new Error("PVSyst CSV baslik satiri bulunamadi (E_Grid/EArray).");
+    throw new Error("PVSyst CSV baslik satiri bulunamadi (tarih, E_Grid/EArray).");
   }
 
   const headers = lines[headerLineIdx]
@@ -409,7 +421,6 @@ function parsePvsystCsv(csvText) {
 
   const eGridIdx  = colIdx("E_Grid", "EGrid");
   const eArrayIdx = colIdx("EArray");
-
   if (eGridIdx === -1) {
     throw new Error(`E_Grid kolonu bulunamadi. Mevcut: ${headers.join(", ")}`);
   }
@@ -417,25 +428,28 @@ function parsePvsystCsv(csvText) {
   const scaleGrid  = scaleFactor(eGridIdx);
   const scaleArray = scaleFactor(eArrayIdx);
 
+  // Veri: 14. satirdan (1-based) itibaren; sadece A sutununda "gg.aa.yyyy ss:dd" olan satirlar saatlik veri
+  const dataStartIdx = Math.max(headerLineIdx + 2, PVSYST_DATA_START_ROW_1BASED - 1);
   const data = [];
-  for (let i = headerLineIdx + 2; i < lines.length; i++) {
+  for (let i = dataStartIdx; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
-
     const c = line.split(";").map(v => v.trim().replace(",", "."));
+    const aSutunu = (c[0] || "").trim();
+    if (!TARIH_SAAT_REGEX.test(aSutunu)) continue;
 
     const eGridKwh  = (parseFloat(c[eGridIdx])  || 0) * scaleGrid;
     const eArrayKwh = eArrayIdx >= 0 ? (parseFloat(c[eArrayIdx]) || 0) * scaleArray : eGridKwh;
+    const acKw = Math.max(0, eGridKwh);
+    const dcKw = Math.max(0, eArrayKwh);
 
-    // Eski alanlarla uyumluluk: dcKw = eArray, acKw = eGrid
     data.push({
       hourIndex: data.length,
-      dcKw: eArrayKwh,
-      acKw: eGridKwh,
-      eArrayKwh,
-      eGridKwh
+      dcKw,
+      acKw,
+      eArrayKwh: dcKw,
+      eGridKwh: acKw
     });
-
     if (data.length >= 8760) break;
   }
 
@@ -447,9 +461,10 @@ function parsePvsystCsv(csvText) {
 }
 
 /**
- * EPIAS saatlik fiyat verisini simülasyon formatına dönüştür.
- * Hem PVSyst hem EPIAS Türkiye saati (UTC+3) kullanır — kaydırma gerekmez.
- * Frontend, her EPIAS kaydı için yil-ici-saat-indeksi (0..8759) hesaplayarak gönderir.
+ * 1 yillik EPIAS saatlik fiyatlari simülasyon formatina donusturur.
+ * Eslesme: yil onemli degil (PVsyst 1990 olabilir), tarih-gun-saat sirasina gore.
+ * hourIndex 0 = yilin ilk saati (1 Ocak 00:00), 8759 = son saat (31 Aralik 23:00).
+ * pvsystData[h] ile epiasData[h] ayni "gun + saat" icin eslenir; yil kullanilmaz.
  */
 function alignEpiasData(epiasHourly) {
   if (!epiasHourly || epiasHourly.length === 0) return [];
