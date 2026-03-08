@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/env");
-const { getUserBySupabaseId, upsertSupabaseUser } = require("../repositories/authRepository");
+const { getOrCreateUserByEmail } = require("../repositories/authRepository");
 
 function isUuid(str) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str || ""));
@@ -16,6 +16,7 @@ async function authenticate(req, _res, next) {
     return next(err);
   }
 
+  // Once lokal JWT dene
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = {
@@ -25,36 +26,52 @@ async function authenticate(req, _res, next) {
     };
     return next();
   } catch (_localErr) {
-    // Local JWT dogrulanamadi, Supabase token dene
+    // Lokal JWT gecersiz, Supabase token akisina gec
+  }
+
+  // Supabase JWT decode et (imza dogrulamasi olmadan)
+  let decoded;
+  try {
+    decoded = jwt.decode(token);
+  } catch (_e) {
+    const err = new Error("Token parse edilemedi.");
+    err.statusCode = 401;
+    return next(err);
+  }
+
+  if (!decoded || !decoded.sub) {
+    const err = new Error("Oturum gecersiz.");
+    err.statusCode = 401;
+    return next(err);
+  }
+
+  const simdi = Math.floor(Date.now() / 1000);
+  if (decoded.exp && decoded.exp < simdi) {
+    const err = new Error("Oturum suresi dolmus. Lutfen tekrar giris yapin.");
+    err.statusCode = 401;
+    return next(err);
+  }
+
+  if (!isUuid(decoded.sub)) {
+    const err = new Error("Oturum token formati gecersiz.");
+    err.statusCode = 401;
+    return next(err);
+  }
+
+  const email = String(decoded.email || decoded.user_metadata?.email || "").toLowerCase().trim();
+  if (!email) {
+    const err = new Error("Token icerisinde e-posta bulunamadi.");
+    err.statusCode = 401;
+    return next(err);
   }
 
   try {
-    const decoded = jwt.decode(token);
+    const fullName =
+      decoded.user_metadata?.full_name ||
+      decoded.user_metadata?.name ||
+      email.split("@")[0];
 
-    if (!decoded || !decoded.sub || !decoded.email) {
-      const err = new Error("Oturum gecersiz.");
-      err.statusCode = 401;
-      return next(err);
-    }
-
-    const simdi = Math.floor(Date.now() / 1000);
-    if (decoded.exp && decoded.exp < simdi) {
-      const err = new Error("Oturum suresi dolmus. Lutfen tekrar giris yapin.");
-      err.statusCode = 401;
-      return next(err);
-    }
-
-    if (!isUuid(decoded.sub)) {
-      const err = new Error("Oturum gecersiz veya suresi dolmus.");
-      err.statusCode = 401;
-      return next(err);
-    }
-
-    const localUser = await upsertSupabaseUser({
-      supabaseId: decoded.sub,
-      email: decoded.email,
-      fullName: decoded.user_metadata?.full_name || decoded.email.split("@")[0]
-    });
+    const localUser = await getOrCreateUserByEmail(email, fullName, decoded.sub);
 
     req.user = {
       id: localUser.id,
@@ -63,8 +80,9 @@ async function authenticate(req, _res, next) {
     };
     return next();
   } catch (err) {
-    const hata = new Error("Oturum dogrulanamadi.");
-    hata.statusCode = 401;
+    console.error("[authenticate] Kullanici eslesme hatasi:", err.message);
+    const hata = new Error("Kimlik dogrulama islemi basarisiz.");
+    hata.statusCode = 500;
     return next(hata);
   }
 }
