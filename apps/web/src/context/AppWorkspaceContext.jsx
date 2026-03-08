@@ -338,6 +338,16 @@ function AppWorkspaceProvider({ children }) {
     projeYukle();
   }, [projeYukle]);
 
+  // Giris cikis veya hesap degisince proje listesini yeniden yukle
+  useEffect(() => {
+    if (!supabase) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) projeYukle();
+      else setProjeListesi([]);
+    });
+    return () => subscription?.unsubscribe();
+  }, [projeYukle]);
+
   // Proje acildiginda o projeye ait kayitli durumu yukle
   function projeAc(proje) {
     kaydediliyor.current = true;

@@ -1219,6 +1219,188 @@ body {
 .auth-logo h2 { font-size: 1.5rem; color: var(--secondary); margin-top: 10px; }
 .auth-logo p { color: var(--text-soft); font-size: 0.9rem; }
 
+/* ===== LOGIN / KAYIT SAYFA (public shell icinde) ===== */
+.auth-page {
+  padding: 24px 14px 48px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 120px);
+}
+
+.auth-page-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: 32px 28px;
+}
+
+.auth-page-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-page-header h1 {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--secondary);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.auth-page-header p {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.auth-page-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 24px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+
+.auth-page-tab {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-page-tab:hover {
+  color: var(--text);
+}
+
+.auth-page-tab-active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-page-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-page-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-page-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.auth-page-field input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.auth-page-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.auth-page-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.12);
+}
+
+.auth-page-alert {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.auth-page-alert-danger {
+  background: #FEF2F2;
+  color: var(--danger);
+  border: 1px solid #FECACA;
+}
+
+.auth-page-alert-success {
+  background: #F0FDF4;
+  color: var(--success);
+  border: 1px solid #BBF7D0;
+}
+
+.auth-page-submit {
+  margin-top: 6px;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.auth-page-submit:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(232, 80, 10, 0.35);
+}
+
+.auth-page-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-page-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-page-footer-link {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-page-footer-link:hover {
+  color: var(--primary);
+}
+
 /* ===== EPIAS / GRAFIK RENK YARDIMCI ===== */
 .renk-orange { color: var(--primary); }
 .renk-navy { color: var(--secondary); }
@@ -1236,6 +1418,9 @@ body {
   .proje-kart-grid { grid-template-columns: 1fr; }
   .batarya-kart-grid { grid-template-columns: 1fr; }
   .strateji-secim-grid { grid-template-columns: 1fr; }
+  .auth-page { padding: 16px 12px 32px; }
+  .auth-page-card { padding: 24px 20px; }
+  .auth-page-header h1 { font-size: 1.45rem; }
 }
 
 /* ===== SCROLLBAR ===== */

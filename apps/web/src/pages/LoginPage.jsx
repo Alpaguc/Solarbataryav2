@@ -8,6 +8,7 @@ function LoginPage() {
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState("login");
   const [hata, setHata] = useState("");
+  const [basariMesaji, setBasariMesaji] = useState("");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
@@ -17,11 +18,8 @@ function LoginPage() {
 
   useEffect(() => {
     const modeParam = searchParams.get("mode");
-    if (modeParam === "register") {
-      setMode("register");
-    } else if (modeParam === "login") {
-      setMode("login");
-    }
+    if (modeParam === "register") setMode("register");
+    else if (modeParam === "login") setMode("login");
   }, [searchParams]);
 
   if (isAuthenticated) {
@@ -31,105 +29,146 @@ function LoginPage() {
   async function submit(e) {
     e.preventDefault();
     setHata("");
+    setBasariMesaji("");
     setLoading(true);
     try {
       if (!supabaseHazir) {
-        throw new Error("Supabase ayarlari eksik. Netlify ortam degiskenlerine SUPABASE bilgilerini ekleyin.");
+        throw new Error("Supabase ayarlari eksik. VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY tanimlayin.");
       }
       if (mode === "login") {
         await girisYap({ email: form.email, password: form.password });
+        navigate("/app", { replace: true });
       } else {
-        await kayitOl({
-          fullName: form.fullName,
-          email: form.email,
-          password: form.password
-        });
+        try {
+          await kayitOl({
+            fullName: form.fullName,
+            email: form.email,
+            password: form.password
+          });
+          navigate("/app", { replace: true });
+        } catch (err) {
+          const msg = err?.message || "";
+          if (msg.includes("dogrulama") || msg.includes("e-posta")) {
+            setBasariMesaji("Kayıt oluştu. Lütfen e-posta adresinize gelen doğrulama bağlantısını onaylayın.");
+          } else {
+            throw err;
+          }
+        }
       }
-      navigate("/app", { replace: true });
     } catch (err) {
-      setHata(err?.message || err?.response?.data?.error || "Giris islemi basarisiz.");
+      setHata(err?.message || err?.response?.data?.error || "İşlem başarısız.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="auth-wrapper">
-      <div className="auth-card glass-card">
-        <h2>{mode === "login" ? "Kullanici Girisi" : "Hesap Olustur"}</h2>
-        <p>{mode === "login" ? "Simulasyon alanina erismek icin giris yapin." : "Hizli kayit ile proje alani acin."}</p>
+    <section className="auth-page">
+      <div className="auth-page-card">
+        <div className="auth-page-header">
+          <h1>{mode === "login" ? "Giriş Yap" : "Hesap Oluştur"}</h1>
+          <p>
+            {mode === "login"
+              ? "Simülasyon alanına erişmek için giriş yapın."
+              : "Hızlı kayıt ile proje alanı açın."}
+          </p>
+        </div>
+
         {!supabaseHazir && (
-          <div className="hata-kutu">Supabase degiskenleri eksik. VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY tanimlayin.</div>
+          <div className="auth-page-alert auth-page-alert-danger">
+            Supabase değişkenleri eksik. VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY tanımlayın.
+          </div>
         )}
 
-        <div className="auth-mode-switch">
+        <div className="auth-page-tabs">
           <button
             type="button"
-            className={`mode-btn ${mode === "login" ? "aktif" : ""}`}
-            onClick={() => setMode("login")}
+            className={`auth-page-tab ${mode === "login" ? "auth-page-tab-active" : ""}`}
+            onClick={() => { setMode("login"); setHata(""); setBasariMesaji(""); }}
           >
-            Giris
+            Giriş
           </button>
           <button
             type="button"
-            className={`mode-btn ${mode === "register" ? "aktif" : ""}`}
-            onClick={() => setMode("register")}
+            className={`auth-page-tab ${mode === "register" ? "auth-page-tab-active" : ""}`}
+            onClick={() => { setMode("register"); setHata(""); setBasariMesaji(""); }}
           >
-            Kayit
+            Kayıt
           </button>
         </div>
 
-        <form className="simulasyon-form" onSubmit={submit}>
+        <form className="auth-page-form" onSubmit={submit}>
           {mode === "register" && (
-            <label>
-              Ad Soyad
+            <div className="auth-page-field">
+              <label htmlFor="auth-fullName">Ad Soyad</label>
               <input
+                id="auth-fullName"
+                type="text"
                 value={form.fullName}
                 onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
-                placeholder="Adiniz Soyadiniz"
+                placeholder="Adınız Soyadınız"
                 required={mode === "register"}
+                autoComplete="name"
               />
-            </label>
+            </div>
           )}
-          <label>
-            E-posta
+          <div className="auth-page-field">
+            <label htmlFor="auth-email">E-posta</label>
             <input
+              id="auth-email"
               type="email"
               value={form.email}
               onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
               placeholder="ornek@mail.com"
               required
+              autoComplete="email"
             />
-          </label>
-          <label>
-            Sifre
+          </div>
+          <div className="auth-page-field">
+            <label htmlFor="auth-password">Şifre</label>
             <input
+              id="auth-password"
               type="password"
               value={form.password}
               onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
               placeholder="En az 6 karakter"
               required
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
             />
-          </label>
+          </div>
 
-          {hata && <div className="hata-kutu">{hata}</div>}
+          {hata && (
+            <div className="auth-page-alert auth-page-alert-danger" role="alert">
+              {hata}
+            </div>
+          )}
+          {basariMesaji && (
+            <div className="auth-page-alert auth-page-alert-success" role="status">
+              {basariMesaji}
+            </div>
+          )}
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? "Bekleyin..." : mode === "login" ? "Giris Yap" : "Kayit Ol"}
+          <button
+            type="submit"
+            className="auth-page-submit"
+            disabled={loading}
+          >
+            {loading ? "Bekleyin..." : mode === "login" ? "Giriş Yap" : "Kayıt Ol"}
           </button>
         </form>
 
-        <button
-          type="button"
-          className="metin-buton"
-          onClick={() => setMode((m) => (m === "login" ? "register" : "login"))}
-        >
-          {mode === "login" ? "Hesabiniz yok mu? Kayit olun" : "Hesabiniz var mi? Giris yapin"}
-        </button>
-
-        <Link to="/" className="metin-link">
-          Ana sayfaya don
-        </Link>
+        <div className="auth-page-footer">
+          <button
+            type="button"
+            className="auth-page-footer-link"
+            onClick={() => setMode((m) => (m === "login" ? "register" : "login"))}
+          >
+            {mode === "login" ? "Hesabınız yok mu? Kayıt olun" : "Hesabınız var mı? Giriş yapın"}
+          </button>
+          <Link to="/" className="auth-page-footer-link">
+            Ana sayfaya dön
+          </Link>
+        </div>
       </div>
     </section>
   );
