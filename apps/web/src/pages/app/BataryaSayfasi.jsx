@@ -225,7 +225,12 @@ function BtrImportForm({ onKaydet }) {
         className={`drop-zone ${preview ? "drop-zone-yuklu" : ""}`}
         onClick={() => inputRef.current?.click()}
       >
-        <div className="drop-zone-ikon">{preview ? "✅" : "🔋"}</div>
+        <div style={{ width: 48, height: 48, borderRadius: 12, background: preview ? "#DCFCE7" : "var(--bg)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+          {preview
+            ? <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" /><line x1="10" y1="8" x2="14" y2="8" /><line x1="12" y1="5" x2="12" y2="2" /></svg>
+          }
+        </div>
         <h4>{preview ? preview.name : "PVSyst .BTR Dosyasini Secin"}</h4>
         <p>{preview ? `${preview.size} KB - yuklu` : "PVSyst battery definition file (.btr, .txt)"}</p>
         <input ref={inputRef} type="file" accept=".btr,.txt" hidden onChange={e => handleFile(e.target.files[0])} />
@@ -351,7 +356,9 @@ function BataryaSayfasi() {
                 )}
                 {bataryalar.length === 0 && (
                   <div className="bos-proje-alani">
-                    <div className="bos-proje-ikon">🔋</div>
+                    <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--bg)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" /><line x1="10" y1="8" x2="14" y2="8" /><line x1="12" y1="5" x2="12" y2="2" /></svg>
+                    </div>
                     <p>Katalogda batarya bulunamadi. Ozel giris veya BTR import yapiniz.</p>
                   </div>
                 )}

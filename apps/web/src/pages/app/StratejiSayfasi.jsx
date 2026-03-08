@@ -6,19 +6,19 @@ const STRATEJILER = [
   {
     key: "arbitraj",
     adi: "Arbitraj",
-    ikon: "📈",
+    ikon: "ARB",
     aciklama: "En ucuz saatlerde satin al, en pahali saatlerde sat. EPIAS fiyat verisiyle net geliri maksimize et."
   },
   {
     key: "peak_shaving",
     adi: "Peak Shaving",
-    ikon: "⚡",
+    ikon: "PEAK",
     aciklama: "Sahaya gucunu belirli bir limite kisitla. Limit asiminda fazla enerjiyi bataryaya depola, dusuk saatlerde desarj et."
   },
   {
     key: "price_threshold",
     adi: "Fiyat Esigi",
-    ikon: "🎯",
+    ikon: "ESK",
     aciklama: "EPIAS fiyati alt esik altindaysa klipping enerjisini depola, ust esik ustundeyse desarj ederek sat."
   }
 ];
@@ -87,9 +87,18 @@ function PriceThresholdForm({ params, onChange }) {
   );
 }
 
+function parseAcKwFromProje(description) {
+  if (!description) return null;
+  const m = description.match(/AC G[üu][çc]:\s*([0-9.]+)/i);
+  return m ? Number(m[1]) : null;
+}
+
 function StratejiSayfasi() {
   const navigate = useNavigate();
-  const { stratejiKonfig, setStratejiKonfig, secilenBatarya } = useAppWorkspace();
+  const { stratejiKonfig, setStratejiKonfig, secilenBatarya, secilenProje } = useAppWorkspace();
+
+  const projeAcKw = parseAcKwFromProje(secilenProje?.description);
+  const projeDcKw = secilenProje?.installedPowerKw || "";
 
   const [seciliStrateji, setSeciliStrateji] = useState(stratejiKonfig?.strategyType || null);
   const [stratejParams, setStratejParams] = useState(stratejiKonfig?.strategyParams || {});
@@ -99,9 +108,9 @@ function StratejiSayfasi() {
     inverterCostTry: 0
   });
   const [gridParams, setGridParams] = useState(stratejiKonfig?.gridParams || {
-    acMaxPowerKw: secilenBatarya?.maxDischargePowerKw || "",
-    dcPowerKw: "",
-    gridLimitKw: ""
+    acMaxPowerKw: projeAcKw || secilenBatarya?.maxDischargePowerKw || "",
+    dcPowerKw: projeDcKw || "",
+    gridLimitKw: projeAcKw || ""
   });
 
   function handleKaydet() {
@@ -135,7 +144,12 @@ function StratejiSayfasi() {
                 tabIndex={0}
                 onKeyDown={e => e.key === "Enter" && setSeciliStrateji(str.key)}
               >
-                <div className="strateji-kart-ikon">{str.ikon}</div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  width: 48, height: 48, borderRadius: 10, marginBottom: 10,
+                  background: "var(--secondary)", color: "#fff",
+                  fontWeight: 800, fontSize: "0.75rem", letterSpacing: "0.04em"
+                }}>{str.ikon}</div>
                 <div className="strateji-kart-adi">{str.adi}</div>
                 <div className="strateji-kart-aciklama">{str.aciklama}</div>
               </div>

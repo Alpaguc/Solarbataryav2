@@ -31,19 +31,42 @@ function SimulasyonSayfasi() {
     try {
       setIlerleme(20);
 
-      // EPIAS verisi cek
+      // EPIAS verisi cek — onceki tam yilin verisini kullan
       let epiasHourly = [];
       try {
         setIlerleme(30);
-        const epiasRes = await getEpiasData({ limit: 9000 });
-        if (epiasRes?.data && Array.isArray(epiasRes.data)) {
-          epiasHourly = epiasRes.data.map((d, i) => ({
-            hourIndex: i,
-            priceTryMwh: d.price || d.fiyat || 0
-          }));
+        const oncekiYil = new Date().getFullYear() - 1;
+        const startDate = `${oncekiYil}-01-01`;
+        const endDate = `${oncekiYil}-12-31`;
+        const epiasRes = await getEpiasData({ startDate, endDate });
+        if (epiasRes?.data && Array.isArray(epiasRes.data) && epiasRes.data.length > 0) {
+          epiasHourly = epiasRes.data
+            .map(d => {
+              // d.Tarih = "DD.MM.YYYY", d.Saat = "HH:MM" (Türkiye saati)
+              const trTarih = String(d.Tarih || "");
+              const saat = String(d.Saat || "00:00");
+              const parca = trTarih.split(".");
+              if (parca.length < 3) return null;
+              const day = Number(parca[0]);
+              const month = Number(parca[1]);
+              const year = Number(parca[2]);
+              const hour = Number(saat.split(":")[0] || 0);
+              if (!day || !month || !year || isNaN(hour)) return null;
+              // Yil icerisindeki saat indeksi (Türkiye saati — PVSyst de UTC+3 ile calisir)
+              const tarihObj = new Date(year, month - 1, day);
+              const yilBasi = new Date(year, 0, 1);
+              const gunSirasi = Math.round((tarihObj - yilBasi) / (24 * 3600 * 1000));
+              const hourOfYear = gunSirasi * 24 + hour;
+              if (hourOfYear < 0 || hourOfYear >= 8760) return null;
+              return {
+                hourIndex: hourOfYear,
+                priceTryMwh: d["PTF (TL/MWh)"] || d.price || d.fiyat || 0
+              };
+            })
+            .filter(Boolean);
         }
       } catch (_e) {
-        // EPIAS verisi yoksa dummy kullan
+        // EPIAS erisilemezse backend dummy fiyat kullanir
         epiasHourly = [];
       }
 
@@ -150,7 +173,7 @@ function SimulasyonSayfasi() {
         <div className="card">
           {durum === "hazir" && (
             <div className="sim-durum-kutu">
-              <div className="sim-durum-ikon">🚀</div>
+              <div className="sim-durum-ikon" style={{ background: "var(--primary-light)", color: "var(--primary)", width: 56, height: 56, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem" }}>SIM</div>
               <div className="sim-durum-baslik">Simulasyona Hazir</div>
               <div className="sim-durum-alt">
                 8760 saatlik yillik enerji dengesi hesaplanacak. Birkaç saniye sürebilir.
@@ -187,7 +210,9 @@ function SimulasyonSayfasi() {
 
           {durum === "tamamlandi" && (
             <div className="sim-durum-kutu">
-              <div className="sim-durum-ikon">✅</div>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
               <div className="sim-durum-baslik">Simulasyon Tamamlandi!</div>
               <div className="sim-durum-alt">Sonuclara yonlendiriliyorsunuz...</div>
             </div>
@@ -195,7 +220,9 @@ function SimulasyonSayfasi() {
 
           {durum === "hata" && (
             <div className="sim-durum-kutu">
-              <div className="sim-durum-ikon">❌</div>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "#FEE2E2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </div>
               <div className="sim-durum-baslik">Simulasyon Hatasi</div>
               <div className="alert alert-danger" style={{ maxWidth: 480 }}>{hata}</div>
               <button

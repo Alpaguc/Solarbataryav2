@@ -159,7 +159,9 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
               background: "linear-gradient(135deg, var(--primary), #fc4a1a)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: "1.4rem"
-            }}>☀️</div>
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: "1.15rem" }}>Yeni GES Projesi Oluştur</div>
               <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.82rem" }}>
@@ -217,7 +219,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
             {/* Adım 0 — Temel Bilgiler */}
             {aktifAdim === 0 && (
               <>
-                <FormBolum baslik="Proje Kimliği" ikon="📋">
+                <FormBolum baslik="Proje Kimliği" ikon="ID">
                   <div className="form-grid-2">
                     <Alan label="Proje Adı" zorunlu>
                       <input
@@ -259,7 +261,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   </div>
                 </FormBolum>
 
-                <FormBolum baslik="Coğrafi Konum (Opsiyonel)" ikon="📍">
+                <FormBolum baslik="Coğrafi Konum (Opsiyonel)" ikon="GPS">
                   <div className="form-grid-2">
                     <Alan label="Enlem (°N)" ipucu="Örn: 37.8542">
                       <input
@@ -288,7 +290,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   </div>
                 </FormBolum>
 
-                <FormBolum baslik="Notlar" ikon="📝">
+                <FormBolum baslik="Notlar" ikon="NOT">
                   <Alan label="Proje Hakkında Kısa Açıklama">
                     <textarea
                       value={form.description}
@@ -305,7 +307,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
             {/* Adım 1 — GES Teknik */}
             {aktifAdim === 1 && (
               <>
-                <FormBolum baslik="Güç Parametreleri" ikon="⚡">
+                <FormBolum baslik="Güç Parametreleri" ikon="kW">
                   <div className="form-grid-2">
                     <Alan label="Kurulu DC Güç (kWp)" zorunlu ipucu="Toplam panel DC gücü">
                       <input
@@ -334,7 +336,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                       borderRadius: 8, padding: "10px 14px", marginBottom: 12,
                       display: "flex", alignItems: "center", gap: 10, fontSize: "0.85rem"
                     }}>
-                      <span style={{ fontSize: "1.1rem" }}>{Number(ozeloran) > 1.1 ? "🎯" : "ℹ️"}</span>
+                      <span style={{ fontWeight: 800, color: Number(ozeloran) > 1.1 ? "var(--primary)" : "var(--text-muted)", fontSize: "0.9rem" }}>{Number(ozeloran) > 1.1 ? "!" : "i"}</span>
                       <div>
                         <strong>DC/AC Oranı: {ozeloran}</strong>
                         {Number(ozeloran) > 1.1 &&
@@ -347,7 +349,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   )}
                 </FormBolum>
 
-                <FormBolum baslik="Panel Bilgileri" ikon="☀️">
+                <FormBolum baslik="Panel Bilgileri" ikon="PV">
                   <div className="form-grid-2">
                     <Alan label="Panel Teknolojisi">
                       <select
@@ -395,7 +397,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   </div>
                 </FormBolum>
 
-                <FormBolum baslik="Üretim Tahminleri" ikon="📊">
+                <FormBolum baslik="Üretim Tahminleri" ikon="MWh">
                   <div className="form-grid-2">
                     <Alan label="Tahmini Yıllık Üretim (MWh)" ipucu="PVSyst veya benzeri simülasyon çıktısı">
                       <input
@@ -423,7 +425,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
             {/* Adım 2 — Bağlantı & Alan */}
             {aktifAdim === 2 && (
               <>
-                <FormBolum baslik="Şebeke Bağlantısı" ikon="🔌">
+                <FormBolum baslik="Şebeke Bağlantısı" ikon="AG">
                   <div className="form-grid-2">
                     <Alan label="Bağlantı Gerilimi">
                       <select
@@ -463,7 +465,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   </div>
                 </FormBolum>
 
-                <FormBolum baslik="Arazi Bilgileri" ikon="🌱">
+                <FormBolum baslik="Arazi Bilgileri" ikon="Ha">
                   <div className="form-grid-2">
                     <Alan label="Arazi Tipi">
                       <select
@@ -531,7 +533,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
             <div>
               {hata && (
                 <span style={{ color: "var(--danger)", fontSize: "0.84rem", fontWeight: 600 }}>
-                  ⚠ {hata}
+                  {hata}
                 </span>
               )}
             </div>
@@ -543,7 +545,7 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
                   onClick={() => { setAktifAdim(p => p - 1); setHata(""); }}
                   disabled={yukleniyor}
                 >
-                  ← Geri
+                  Geri
                 </button>
               )}
               <button
@@ -556,13 +558,13 @@ function YeniProjeModal({ onKapat, onOlustur, yukleniyor }) {
               </button>
               {aktifAdim < ADIMLAR.length - 1 ? (
                 <button type="button" className="btn btn-primary" onClick={handleIleri}>
-                  İleri →
+                  Ileri
                 </button>
               ) : (
                 <button type="submit" className="btn btn-primary" disabled={yukleniyor}>
                   {yukleniyor ? (
                     <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Oluşturuluyor...</>
-                  ) : "✓ Projeyi Oluştur"}
+                  ) : "Projeyi Olustur"}
                 </button>
               )}
             </div>
@@ -621,12 +623,11 @@ function ProjeKarti({ proje, index, onSec, onSil }) {
           width: 80, height: 80, borderRadius: "50%",
           background: "rgba(255,255,255,0.04)"
         }} />
-        <div style={{ fontSize: "1.6rem", marginBottom: 8 }}>☀️</div>
         <div style={{ color: "#fff", fontWeight: 700, fontSize: "1rem", marginBottom: 4 }}>
           {proje.projectName}
         </div>
         <div style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.82rem", display: "flex", alignItems: "center", gap: 6 }}>
-          📍 {proje.location}
+          {proje.location}
           {detay["İşletme Yılı"] && (
             <span style={{ background: "rgba(255,255,255,0.15)", borderRadius: 999, padding: "1px 8px", fontSize: "0.75rem" }}>
               {detay["İşletme Yılı"]}
@@ -656,22 +657,22 @@ function ProjeKarti({ proje, index, onSec, onSil }) {
           <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
             {detay["Yıllık Üretim"] && (
               <span style={{ fontSize: "0.74rem", background: "#EFF6FF", color: "var(--secondary)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
-                ⚡ {detay["Yıllık Üretim"]}
+                {detay["Yıllık Üretim"]}
               </span>
             )}
             {detay["Panel"] && (
               <span style={{ fontSize: "0.74rem", background: "var(--primary-light)", color: "var(--primary-dark)", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
-                ☀️ {detay["Panel"].split("(")[0].trim()}
+                {detay["Panel"].split("(")[0].trim()}
               </span>
             )}
             {detay["Gerilim"] && (
               <span style={{ fontSize: "0.74rem", background: "#F0FDF4", color: "#15803D", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
-                🔌 {detay["Gerilim"]}
+                {detay["Gerilim"]}
               </span>
             )}
             {detay["Arazi"] && (
               <span style={{ fontSize: "0.74rem", background: "#FEF9C3", color: "#854D0E", borderRadius: 999, padding: "3px 10px", fontWeight: 600 }}>
-                🌱 {detay["Arazi"]}
+                {detay["Arazi"]}
               </span>
             )}
           </div>

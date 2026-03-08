@@ -143,7 +143,9 @@ function SonuclarSayfasi() {
         </div>
         <div className="card">
           <div className="sim-durum-kutu">
-            <div className="sim-durum-ikon">📊</div>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: "var(--bg)", border: "2px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+              </div>
             <div className="sim-durum-baslik">Sonuc Bulunamadi</div>
             <div className="sim-durum-alt">Once simulasyonu calistirmaniz gerekiyor.</div>
             <button type="button" className="btn btn-primary mt-3" onClick={() => navigate("/app/simulasyon")}>

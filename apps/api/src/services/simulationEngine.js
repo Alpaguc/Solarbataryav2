@@ -447,8 +447,9 @@ function parsePvsystCsv(csvText) {
 }
 
 /**
- * EPIAS saatlik fiyat verisini simülasyon formatına dönüştür
- * EPIAS UTC+3, PVSyst UTC — 3 saat geri kaydır
+ * EPIAS saatlik fiyat verisini simülasyon formatına dönüştür.
+ * Hem PVSyst hem EPIAS Türkiye saati (UTC+3) kullanır — kaydırma gerekmez.
+ * Frontend, her EPIAS kaydı için yil-ici-saat-indeksi (0..8759) hesaplayarak gönderir.
  */
 function alignEpiasData(epiasHourly) {
   if (!epiasHourly || epiasHourly.length === 0) return [];
@@ -459,10 +460,19 @@ function alignEpiasData(epiasHourly) {
   }));
 
   for (const entry of epiasHourly) {
-    const turkiyeHour = entry.hourIndex !== undefined ? entry.hourIndex : (entry.hour || 0);
-    const utcHour = ((turkiyeHour - 3) + 8760) % 8760;
-    if (utcHour < 8760) {
-      aligned[utcHour].priceTryMwh = entry.price || entry.priceTryMwh || 0;
+    const idx = entry.hourIndex !== undefined ? Number(entry.hourIndex) : (entry.hour || 0);
+    if (idx >= 0 && idx < 8760) {
+      aligned[idx].priceTryMwh = entry.priceTryMwh || entry.price || 0;
+    }
+  }
+
+  // Bosluk doldur: fiyat girisi olmayan saatler icin onceki saatten fiyat al
+  let sonFiyat = 1000;
+  for (let i = 0; i < 8760; i++) {
+    if (aligned[i].priceTryMwh > 0) {
+      sonFiyat = aligned[i].priceTryMwh;
+    } else {
+      aligned[i].priceTryMwh = sonFiyat;
     }
   }
 

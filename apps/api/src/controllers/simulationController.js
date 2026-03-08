@@ -32,9 +32,22 @@ async function runSim(req, res, next) {
     }
 
     // EPIAS verisi hizala
-    const epiasAligned = epiasHourly && epiasHourly.length > 0
+    // Veri yoksa gercekci saatlik fiyat profili olustur (gunun saatine gore ortalama desen)
+    function dummyFiyatProfili() {
+      return new Array(8760).fill(null).map((_, i) => {
+        const saat = i % 24;
+        // Sabah/aksam zirve, gece/oglen dip
+        let fiyat = 1500;
+        if (saat >= 6 && saat <= 9) fiyat = 2800;
+        else if (saat >= 17 && saat <= 21) fiyat = 3200;
+        else if (saat >= 0 && saat <= 5) fiyat = 800;
+        else if (saat >= 10 && saat <= 16) fiyat = 1200;
+        return { hourIndex: i, priceTryMwh: fiyat };
+      });
+    }
+    const epiasAligned = epiasHourly && epiasHourly.length > 100
       ? alignEpiasData(epiasHourly)
-      : new Array(8760).fill(null).map((_, i) => ({ hourIndex: i, priceTryMwh: 1000 }));
+      : dummyFiyatProfili();
 
     // Batarya bilgisi
     const battery = await batteryService.getById(Number(batteryCatalogId));
