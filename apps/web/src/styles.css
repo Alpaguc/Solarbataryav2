@@ -918,6 +918,43 @@ body {
   }
 }
 
+/* Proje Secilmedi Uyarisi */
+.proje-secilmedi-uyari {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 30px;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.proje-secilmedi-ikon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 200, 80, 0.15);
+  border: 2px solid rgba(255, 200, 80, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(255, 200, 80, 0.7);
+}
+
+.proje-secilmedi-uyari h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.proje-secilmedi-uyari p {
+  margin: 0;
+  opacity: 0.7;
+  max-width: 320px;
+}
+
 /* Proje Listesi Sayfasi */
 .proje-liste-header {
   display: flex;
@@ -1185,6 +1222,11 @@ body {
 .modal-kutu textarea:focus {
   outline: none;
   border-color: rgba(100, 180, 255, 0.5);
+}
+
+.sidebar-link-pasif {
+  opacity: 0.45;
+  pointer-events: auto;
 }
 
 /* Sidebar proje bilgisi */

@@ -66,12 +66,14 @@ function AppSidebar({ user, onLogout }) {
           <NavLink
             key={menu.to}
             to={menu.to}
-            className={({ isActive }) => `sidebar-link ${isActive ? "aktif" : ""}`}
+            className={({ isActive }) =>
+              `sidebar-link ${isActive ? "aktif" : ""} ${!secilenProje ? "sidebar-link-pasif" : ""}`
+            }
           >
             <span className="sidebar-icon">{menu.icon}</span>
             <span className="sidebar-link-icerik">
               <span>{menu.label}</span>
-              <small>{durumRozeti(menu.durumKey)}</small>
+              <small>{secilenProje ? durumRozeti(menu.durumKey) : "Proje Sec"}</small>
             </span>
           </NavLink>
         ))}
