@@ -5,6 +5,7 @@ const epiasRoutes = require("./epiasRoutes");
 const catalogRoutes = require("./catalogRoutes");
 const simulationRoutes = require("./simulationRoutes");
 const projectRoutes = require("./projectRoutes");
+const batteryRoutes = require("./batteryRoutes");
 const adminRoutes = require("./adminRoutes");
 const { authenticate } = require("../middleware/authenticate");
 const { requireAdmin } = require("../middleware/requireAdmin");
@@ -16,6 +17,7 @@ router.use("/auth", authRoutes);
 router.use("/", epiasRoutes);
 router.use("/catalog", authenticate, catalogRoutes);
 router.use("/projects", authenticate, projectRoutes);
+router.use("/batteries", authenticate, batteryRoutes);
 router.use("/simulations", authenticate, simulationRoutes);
 router.use("/admin", authenticate, requireAdmin, adminRoutes);
 

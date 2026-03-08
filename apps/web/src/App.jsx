@@ -7,10 +7,11 @@ import AppShell from "./components/app/AppShell";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ProjeListesiPage from "./pages/app/ProjeListesiPage";
-import VeriGirisiPage from "./pages/app/VeriGirisiPage";
-import DepolamaliSistemPage from "./pages/app/DepolamaliSistemPage";
-import HesaplamaYontemleriPage from "./pages/app/HesaplamaYontemleriPage";
-import AnalizPage from "./pages/app/AnalizPage";
+import PvsystSayfasi from "./pages/app/PvsystSayfasi";
+import BataryaSayfasi from "./pages/app/BataryaSayfasi";
+import StratejiSayfasi from "./pages/app/StratejiSayfasi";
+import SimulasyonSayfasi from "./pages/app/SimulasyonSayfasi";
+import SonuclarSayfasi from "./pages/app/SonuclarSayfasi";
 
 function ProjeGerekliGuard({ children }) {
   const { secilenProje } = useAppWorkspace();
@@ -18,7 +19,7 @@ function ProjeGerekliGuard({ children }) {
 
   if (!secilenProje) {
     return (
-      <div className="proje-secilmedi-uyari glass-card">
+      <div className="proje-secilmedi-uyari card">
         <div className="proje-secilmedi-ikon">P</div>
         <h3>Proje Secilmedi</h3>
         <p>Bu sayfayi kullanmak icin once bir proje secmelisiniz.</p>
@@ -46,34 +47,42 @@ function PrivateLayout() {
           <Route index element={<Navigate to="/app/projeler" replace />} />
           <Route path="projeler" element={<ProjeListesiPage />} />
           <Route
-            path="veri-girisi"
+            path="pvsyst"
             element={
               <ProjeGerekliGuard>
-                <VeriGirisiPage />
+                <PvsystSayfasi />
               </ProjeGerekliGuard>
             }
           />
           <Route
-            path="depolamali-sistem"
+            path="batarya"
             element={
               <ProjeGerekliGuard>
-                <DepolamaliSistemPage />
+                <BataryaSayfasi />
               </ProjeGerekliGuard>
             }
           />
           <Route
-            path="hesaplama-yontemleri"
+            path="strateji"
             element={
               <ProjeGerekliGuard>
-                <HesaplamaYontemleriPage />
+                <StratejiSayfasi />
               </ProjeGerekliGuard>
             }
           />
           <Route
-            path="analiz"
+            path="simulasyon"
             element={
               <ProjeGerekliGuard>
-                <AnalizPage />
+                <SimulasyonSayfasi />
+              </ProjeGerekliGuard>
+            }
+          />
+          <Route
+            path="sonuclar"
+            element={
+              <ProjeGerekliGuard>
+                <SonuclarSayfasi />
               </ProjeGerekliGuard>
             }
           />

@@ -199,7 +199,7 @@ function ProjeListesiPage() {
       const yeniProje = await projeOlustur(payload);
       setModalAcik(false);
       if (yeniProje) {
-        navigate(`/app/veri-girisi`);
+        navigate(`/app/pvsyst`);
       }
     } catch (err) {
       throw err;
@@ -218,17 +218,17 @@ function ProjeListesiPage() {
   }
 
   return (
-    <section className="app-modul">
-      <header className="app-modul-baslik glass-card proje-liste-header">
-        <div className="proje-liste-baslik-sol">
-          <h1>Projelerim</h1>
-          <p>Her proje icin ayri simülasyon ve analiz yapabilirsiniz.</p>
-          <div className="proje-sayac-grup">
+    <div>
+      <div className="proje-liste-header">
+        <div>
+          <h2 style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--secondary)", marginBottom: 4 }}>Projelerim</h2>
+          <p style={{ color: "var(--text-soft)", fontSize: "0.95rem" }}>Her proje icin ayri simulasyon ve analiz yapabilirsiniz.</p>
+          <div className="proje-sayac-grup mt-2">
             <span className="proje-sayac-rozet">
               {projeListesi.length} aktif proje
             </span>
             {totalProjectsCreated > 0 && (
-              <span className="proje-sayac-toplam">
+              <span className="proje-sayac-rozet proje-sayac-toplam">
                 Toplam olusturulan: {totalProjectsCreated}
               </span>
             )}
@@ -241,17 +241,16 @@ function ProjeListesiPage() {
         >
           + Yeni Proje
         </button>
-      </header>
+      </div>
 
-      {hata && <div className="hata-kutu">{hata}</div>}
+      {hata && <div className="alert alert-danger">{hata}</div>}
 
       {projeYukleniyor ? (
-        <div className="yukleniyor-kutu glass-card">
-          <div className="yukleniyor-daire" />
-          <span>Projeler yukleniyor...</span>
+        <div className="yukleniyor-kutu">
+          <div className="spinner" />
         </div>
       ) : projeListesi.length === 0 ? (
-        <div className="bos-proje-alani glass-card">
+        <div className="card"><div className="bos-proje-alani">
           <div className="bos-proje-ikon">P</div>
           <h3>Henüz proje yok</h3>
           <p>Ilk projenizi olusturun ve simülasyon yapmaya baslayın.</p>
@@ -262,7 +261,7 @@ function ProjeListesiPage() {
           >
             + Ilk Projeyi Olustur
           </button>
-        </div>
+        </div></div>
       ) : (
         <div className="proje-kart-grid">
           {projeListesi.map((proje, index) => (
@@ -272,7 +271,7 @@ function ProjeListesiPage() {
               index={index}
               onSec={(p) => {
                 projeAc(p);
-                navigate("/app/veri-girisi");
+                navigate("/app/pvsyst");
               }}
               onSil={handleSil}
             />
@@ -287,7 +286,7 @@ function ProjeListesiPage() {
           yukleniyor={olusturuluyor}
         />
       )}
-    </section>
+    </div>
   );
 }
 

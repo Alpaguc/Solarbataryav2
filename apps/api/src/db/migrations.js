@@ -138,6 +138,85 @@ const MIGRATIONS = [
   `,
   `
   CREATE INDEX IF NOT EXISTS idx_settings_key ON app_settings (setting_key);
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS battery_catalog (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    source TEXT NOT NULL DEFAULT 'catalog',
+    manufacturer TEXT NOT NULL,
+    model TEXT NOT NULL,
+    chemistry TEXT NOT NULL DEFAULT 'LFP',
+    nominal_capacity_kwh REAL NOT NULL,
+    max_charge_power_kw REAL NOT NULL,
+    max_discharge_power_kw REAL NOT NULL,
+    charge_efficiency REAL NOT NULL DEFAULT 0.95,
+    discharge_efficiency REAL NOT NULL DEFAULT 0.95,
+    min_soc REAL NOT NULL DEFAULT 0.1,
+    max_soc REAL NOT NULL DEFAULT 0.9,
+    calendar_degradation_pct_per_year REAL NOT NULL DEFAULT 2.0,
+    cycle_life_json TEXT,
+    efficiency_curve_json TEXT,
+    cost_per_kwh_try REAL,
+    annual_maintenance_try REAL,
+    scrap_value_pct REAL DEFAULT 0.1,
+    raw_btr_json TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS project_simulations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    battery_catalog_id INTEGER,
+    pvsyst_filename TEXT,
+    pvsyst_data_json TEXT,
+    epias_data_json TEXT,
+    ac_max_power_kw REAL,
+    dc_power_kw REAL,
+    grid_limit_kw REAL,
+    strategy_type TEXT NOT NULL DEFAULT 'price_threshold',
+    strategy_params_json TEXT,
+    financial_params_json TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    error_message TEXT,
+    result_summary_json TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (battery_catalog_id) REFERENCES battery_catalog(id) ON DELETE SET NULL
+  );
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS sim_hourly_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    simulation_id INTEGER NOT NULL,
+    hour_index INTEGER NOT NULL,
+    timestamp_utc TEXT NOT NULL,
+    dc_kw REAL NOT NULL DEFAULT 0,
+    ac_kw REAL NOT NULL DEFAULT 0,
+    clipping_kw REAL NOT NULL DEFAULT 0,
+    charge_kw REAL NOT NULL DEFAULT 0,
+    discharge_kw REAL NOT NULL DEFAULT 0,
+    soc_pct REAL NOT NULL DEFAULT 0,
+    price_try_mwh REAL NOT NULL DEFAULT 0,
+    revenue_try REAL NOT NULL DEFAULT 0,
+    cumulative_revenue_try REAL NOT NULL DEFAULT 0,
+    FOREIGN KEY (simulation_id) REFERENCES project_simulations(id) ON DELETE CASCADE
+  );
+  `,
+  `
+  CREATE INDEX IF NOT EXISTS idx_battery_catalog_user ON battery_catalog (user_id, source);
+  `,
+  `
+  CREATE INDEX IF NOT EXISTS idx_project_simulations_project ON project_simulations (project_id);
+  `,
+  `
+  CREATE INDEX IF NOT EXISTS idx_sim_hourly_sim ON sim_hourly_results (simulation_id, hour_index);
   `
 ];
 

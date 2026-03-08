@@ -211,6 +211,27 @@ function hesaplaAnalizSonucu(veriGirisi, depolamaliSistem, hesaplama) {
   };
 }
 
+function simStorageKey(projeId) {
+  return `sb_sim_${projeId}`;
+}
+
+function simVerisiYukle(projeId) {
+  if (!projeId) return null;
+  try {
+    const ham = localStorage.getItem(simStorageKey(projeId));
+    return ham ? JSON.parse(ham) : null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+function simVerisiKaydet(projeId, data) {
+  if (!projeId) return;
+  try {
+    localStorage.setItem(simStorageKey(projeId), JSON.stringify(data));
+  } catch (_e) { /* ignore */ }
+}
+
 function AppWorkspaceProvider({ children }) {
   const [veriGirisi, setVeriGirisi] = useState(varsayilanVeriGirisi());
   const [depolamaliSistem, setDepolamaliSistem] = useState(VARSAYILAN_DEPOLAMALI_SISTEM);
@@ -223,6 +244,13 @@ function AppWorkspaceProvider({ children }) {
   const [projeYukleniyor, setProjeYukleniyor] = useState(false);
   const [projeHata, setProjeHata] = useState("");
 
+  // Yeni simulasyon state'leri
+  const [pvsystData, setPvsystDataRaw] = useState(null);
+  const [pvsystFilename, setPvsystFilename] = useState(null);
+  const [secilenBatarya, setSecilenBataryaRaw] = useState(null);
+  const [stratejiKonfig, setStratejiKonfigRaw] = useState(null);
+  const [simulasyonSonucu, setSimulasyonSonucuRaw] = useState(null);
+
   // Proje degisiminde otomatik kayit icin ref takibi
   const kaydediliyor = useRef(false);
 
@@ -231,6 +259,40 @@ function AppWorkspaceProvider({ children }) {
     if (!secilenProje?.id || kaydediliyor.current) return;
     projeVerisiKaydet(secilenProje.id, veriGirisi, depolamaliSistem, hesaplama);
   }, [veriGirisi, depolamaliSistem, hesaplama, secilenProje]);
+
+  // Simulasyon state fonksiyonlari
+  function setPvsystData(data, filename = null) {
+    setPvsystDataRaw(data);
+    if (filename) setPvsystFilename(filename);
+    if (secilenProje?.id) {
+      const kayitli = simVerisiYukle(secilenProje.id) || {};
+      simVerisiKaydet(secilenProje.id, { ...kayitli, pvsystFilename: filename || kayitli.pvsystFilename });
+    }
+  }
+
+  function setSecilenBatarya(batarya) {
+    setSecilenBataryaRaw(batarya);
+    if (secilenProje?.id) {
+      const kayitli = simVerisiYukle(secilenProje.id) || {};
+      simVerisiKaydet(secilenProje.id, { ...kayitli, secilenBatarya: batarya });
+    }
+  }
+
+  function setStratejiKonfig(konfig) {
+    setStratejiKonfigRaw(konfig);
+    if (secilenProje?.id) {
+      const kayitli = simVerisiYukle(secilenProje.id) || {};
+      simVerisiKaydet(secilenProje.id, { ...kayitli, stratejiKonfig: konfig });
+    }
+  }
+
+  function setSimulasyonSonucu(sonuc) {
+    setSimulasyonSonucuRaw(sonuc);
+    if (secilenProje?.id) {
+      const kayitli = simVerisiYukle(secilenProje.id) || {};
+      simVerisiKaydet(secilenProje.id, { ...kayitli, simulasyonSonucu: sonuc });
+    }
+  }
 
   const projeYukle = useCallback(async () => {
     setProjeYukleniyor(true);
@@ -261,7 +323,6 @@ function AppWorkspaceProvider({ children }) {
       setDepolamaliSistem(kayitli.depolamaliSistem || VARSAYILAN_DEPOLAMALI_SISTEM);
       setHesaplama(kayitli.hesaplama || VARSAYILAN_HESAPLAMA);
     } else {
-      // Ilk kez aciliyor — proje bilgileriyle doldur
       setVeriGirisi(varsayilanVeriGirisi(
         proje.projectName,
         proje.location,
@@ -270,6 +331,14 @@ function AppWorkspaceProvider({ children }) {
       setDepolamaliSistem(VARSAYILAN_DEPOLAMALI_SISTEM);
       setHesaplama(VARSAYILAN_HESAPLAMA);
     }
+
+    // Simulasyon state'lerini proje'ye gore yukle
+    const simKayitli = simVerisiYukle(proje.id);
+    setPvsystDataRaw(null);
+    setPvsystFilename(simKayitli?.pvsystFilename || null);
+    setSecilenBataryaRaw(simKayitli?.secilenBatarya || null);
+    setStratejiKonfigRaw(simKayitli?.stratejiKonfig || null);
+    setSimulasyonSonucuRaw(simKayitli?.simulasyonSonucu || null);
 
     setAnalizSonucu(null);
     setSecilenProje(proje);
@@ -289,6 +358,7 @@ function AppWorkspaceProvider({ children }) {
   async function projeSil(projeId) {
     await deleteProject(projeId);
     try { localStorage.removeItem(storageKey(projeId)); } catch (_e) { /* ignore */ }
+    try { localStorage.removeItem(simStorageKey(projeId)); } catch (_e) { /* ignore */ }
     setProjeListesi((prev) => prev.filter((p) => p.id !== projeId));
     if (secilenProje?.id === projeId) {
       setSecilenProje(null);
@@ -296,6 +366,10 @@ function AppWorkspaceProvider({ children }) {
       setDepolamaliSistem(VARSAYILAN_DEPOLAMALI_SISTEM);
       setHesaplama(VARSAYILAN_HESAPLAMA);
       setAnalizSonucu(null);
+      setPvsystDataRaw(null);
+      setSecilenBataryaRaw(null);
+      setStratejiKonfigRaw(null);
+      setSimulasyonSonucuRaw(null);
     }
   }
 
@@ -353,7 +427,17 @@ function AppWorkspaceProvider({ children }) {
       projeYukle,
       projeOlustur,
       projeSil,
-      projeAc
+      projeAc,
+      // Yeni simulasyon state'leri
+      pvsystData,
+      pvsystFilename,
+      setPvsystData,
+      secilenBatarya,
+      setSecilenBatarya,
+      stratejiKonfig,
+      setStratejiKonfig,
+      simulasyonSonucu,
+      setSimulasyonSonucu
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -369,7 +453,12 @@ function AppWorkspaceProvider({ children }) {
       totalProjectsCreated,
       projeYukleniyor,
       projeHata,
-      projeYukle
+      projeYukle,
+      pvsystData,
+      pvsystFilename,
+      secilenBatarya,
+      stratejiKonfig,
+      simulasyonSonucu
     ]
   );
 

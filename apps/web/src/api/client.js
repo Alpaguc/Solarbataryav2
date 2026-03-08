@@ -88,6 +88,46 @@ export async function getEpiasDateRange() {
   return data.data;
 }
 
+export async function listBatteries() {
+  const { data } = await api.get("/batteries");
+  return data.data;
+}
+
+export async function createCustomBattery(payload) {
+  const { data } = await api.post("/batteries/custom", payload);
+  return data.data;
+}
+
+export async function importBtrBattery(btrContent) {
+  const { data } = await api.post("/batteries/import-btr", { btrContent });
+  return data.data;
+}
+
+export async function deleteBattery(id) {
+  const { data } = await api.delete(`/batteries/${id}`);
+  return data;
+}
+
+export async function runSimulationNew(payload) {
+  const { data } = await api.post("/simulations/run", payload, { timeout: 120000 });
+  return data.data;
+}
+
+export async function getSimulationSummary(id) {
+  const { data } = await api.get(`/simulations/${id}/summary`);
+  return data.data;
+}
+
+export async function getSimulationResults(id, offset = 0, limit = 168) {
+  const { data } = await api.get(`/simulations/${id}/results`, { params: { offset, limit } });
+  return data;
+}
+
+export async function listProjectSimulations(projectId) {
+  const { data } = await api.get(`/simulations/project/${projectId}`);
+  return data.data;
+}
+
 export async function runSimulation(payload) {
   const { data } = await api.post("/simulations", payload);
   return data.data;
