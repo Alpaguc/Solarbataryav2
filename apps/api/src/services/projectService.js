@@ -8,19 +8,28 @@ class ProjectError extends Error {
   }
 }
 
-async function getMyProject(userId) {
-  return projectRepository.getProjectByUserId(userId);
+async function getMyProjects(userId) {
+  const projeler = await projectRepository.getProjectsByUserId(userId);
+  const istatistik = await projectRepository.getUserProjectStats(userId);
+  return {
+    projects: projeler || [],
+    totalProjectsCreated: istatistik?.totalProjectsCreated || 0
+  };
+}
+
+async function getMyProjectById(userId, projectId) {
+  const proje = await projectRepository.getProjectById(projectId, userId);
+  if (!proje) {
+    throw new ProjectError("Proje bulunamadi.", 404);
+  }
+  return proje;
 }
 
 async function createMyProject(userId, payload) {
-  const mevcut = await projectRepository.getProjectByUserId(userId);
-  if (mevcut) {
-    throw new ProjectError("Bu surumde her kullanici icin tek proje olusturulabilir.", 409);
-  }
-
   const projectName = String(payload?.projectName || "").trim();
   const location = String(payload?.location || "").trim();
-  const installedPowerKw = payload?.installedPowerKw !== undefined ? Number(payload.installedPowerKw) : null;
+  const installedPowerKw =
+    payload?.installedPowerKw !== undefined ? Number(payload.installedPowerKw) : null;
   const description = String(payload?.description || "").trim() || null;
 
   if (projectName.length < 2) {
@@ -33,7 +42,7 @@ async function createMyProject(userId, payload) {
     throw new ProjectError("Kurulu guc negatif olamaz.");
   }
 
-  await projectRepository.createProject({
+  const projeId = await projectRepository.createProject({
     userId,
     projectName,
     location,
@@ -41,11 +50,25 @@ async function createMyProject(userId, payload) {
     description
   });
 
-  return projectRepository.getProjectByUserId(userId);
+  return projectRepository.getProjectById(projeId, userId);
+}
+
+async function deleteMyProject(userId, projectId) {
+  const proje = await projectRepository.getProjectById(projectId, userId);
+  if (!proje) {
+    throw new ProjectError("Proje bulunamadi.", 404);
+  }
+  const silindi = await projectRepository.softDeleteProject(projectId, userId);
+  if (!silindi) {
+    throw new ProjectError("Proje silinemedi.", 500);
+  }
+  return { deleted: true };
 }
 
 module.exports = {
-  getMyProject,
+  getMyProjects,
+  getMyProjectById,
   createMyProject,
+  deleteMyProject,
   ProjectError
 };

@@ -6,6 +6,7 @@ import { AppWorkspaceProvider } from "./context/AppWorkspaceContext";
 import AppShell from "./components/app/AppShell";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
+import ProjeListesiPage from "./pages/app/ProjeListesiPage";
 import VeriGirisiPage from "./pages/app/VeriGirisiPage";
 import DepolamaliSistemPage from "./pages/app/DepolamaliSistemPage";
 import HesaplamaYontemleriPage from "./pages/app/HesaplamaYontemleriPage";
@@ -18,12 +19,13 @@ function PrivateLayout() {
     <AppWorkspaceProvider>
       <AppShell user={user} onLogout={cikisYap}>
         <Routes>
-          <Route index element={<Navigate to="/app/veri-girisi" replace />} />
+          <Route index element={<Navigate to="/app/projeler" replace />} />
+          <Route path="projeler" element={<ProjeListesiPage />} />
           <Route path="veri-girisi" element={<VeriGirisiPage />} />
           <Route path="depolamali-sistem" element={<DepolamaliSistemPage />} />
           <Route path="hesaplama-yontemleri" element={<HesaplamaYontemleriPage />} />
           <Route path="analiz" element={<AnalizPage />} />
-          <Route path="*" element={<Navigate to="/app/veri-girisi" replace />} />
+          <Route path="*" element={<Navigate to="/app/projeler" replace />} />
         </Routes>
       </AppShell>
     </AppWorkspaceProvider>
@@ -65,7 +67,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Navigate to="/app/veri-girisi" replace />
+                <Navigate to="/app/projeler" replace />
               </ProtectedRoute>
             }
           />

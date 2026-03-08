@@ -38,13 +38,23 @@ export async function getMe() {
   return data.data;
 }
 
-export async function getMyProject() {
-  const { data } = await api.get("/projects/me");
+export async function getMyProjects() {
+  const { data } = await api.get("/projects");
+  return data.data;
+}
+
+export async function getMyProject(id) {
+  const { data } = await api.get(`/projects/${id}`);
   return data.data;
 }
 
 export async function createProject(payload) {
   const { data } = await api.post("/projects", payload);
+  return data.data;
+}
+
+export async function deleteProject(id) {
+  const { data } = await api.delete(`/projects/${id}`);
   return data.data;
 }
 

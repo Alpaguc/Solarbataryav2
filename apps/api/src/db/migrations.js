@@ -1,4 +1,4 @@
-const { run } = require("./connection");
+const { run, get } = require("./connection");
 
 const MIGRATIONS = [
   `
@@ -34,11 +34,12 @@ const MIGRATIONS = [
   `
   CREATE TABLE IF NOT EXISTS projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
     project_name TEXT NOT NULL,
     location TEXT NOT NULL,
     installed_power_kw REAL,
     description TEXT,
+    is_deleted INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
@@ -140,6 +141,47 @@ const MIGRATIONS = [
   `
 ];
 
+async function migrateProjectsTableToMultiProject() {
+  const schema = await get(
+    "SELECT sql FROM sqlite_master WHERE type='table' AND name='projects'"
+  );
+
+  if (!schema || !schema.sql) return;
+
+  const hasUniqueOnUserId =
+    /user_id\s+INTEGER\s+NOT\s+NULL\s+UNIQUE/i.test(schema.sql) ||
+    (/UNIQUE\s*\(\s*user_id\s*\)/i.test(schema.sql));
+
+  if (!hasUniqueOnUserId) return;
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS projects_v2 (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      project_name TEXT NOT NULL,
+      location TEXT NOT NULL,
+      installed_power_kw REAL,
+      description TEXT,
+      is_deleted INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  await run(`
+    INSERT OR IGNORE INTO projects_v2 (id, user_id, project_name, location, installed_power_kw, description, created_at)
+    SELECT id, user_id, project_name, location, installed_power_kw, description, created_at
+    FROM projects
+    WHERE NOT EXISTS (SELECT 1 FROM projects_v2 WHERE projects_v2.id = projects.id)
+  `);
+
+  await run(`DROP TABLE projects`);
+  await run(`ALTER TABLE projects_v2 RENAME TO projects`);
+  await run(`CREATE INDEX IF NOT EXISTS idx_projects_user ON projects (user_id)`);
+
+  console.log("Projects tablosu coklu proje destekleyecek sekilde guncellendi.");
+}
+
 async function runMigrations() {
   for (const sql of MIGRATIONS) {
     await run(sql);
@@ -148,7 +190,10 @@ async function runMigrations() {
   const opsiyonelMigrations = [
     "ALTER TABLE simulation_runs ADD COLUMN user_id INTEGER",
     "ALTER TABLE simulation_runs ADD COLUMN project_id INTEGER",
-    "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'"
+    "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'",
+    "ALTER TABLE users ADD COLUMN supabase_id TEXT",
+    "ALTER TABLE users ADD COLUMN total_projects_created INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE projects ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0"
   ];
 
   for (const sql of opsiyonelMigrations) {
@@ -161,6 +206,8 @@ async function runMigrations() {
       }
     }
   }
+
+  await migrateProjectsTableToMultiProject();
 }
 
 module.exports = {

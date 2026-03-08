@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { getMyProjects, createProject, deleteProject } from "../api/client";
 
 const AppWorkspaceContext = createContext(null);
 
@@ -188,6 +189,63 @@ function AppWorkspaceProvider({ children }) {
   const [hesaplama, setHesaplama] = useState(varsayilanHesaplama);
   const [analizSonucu, setAnalizSonucu] = useState(null);
 
+  const [projeListesi, setProjeListesi] = useState([]);
+  const [secilenProje, setSecilenProje] = useState(null);
+  const [totalProjectsCreated, setTotalProjectsCreated] = useState(0);
+  const [projeYukleniyor, setProjeYukleniyor] = useState(false);
+  const [projeHata, setProjeHata] = useState("");
+
+  const projeYukle = useCallback(async () => {
+    setProjeYukleniyor(true);
+    setProjeHata("");
+    try {
+      const veri = await getMyProjects();
+      setProjeListesi(veri?.projects || []);
+      setTotalProjectsCreated(veri?.totalProjectsCreated || 0);
+    } catch (_err) {
+      setProjeHata("Projeler yuklenemedi.");
+    } finally {
+      setProjeYukleniyor(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    projeYukle();
+  }, [projeYukle]);
+
+  async function projeOlustur(payload) {
+    const yeniProje = await createProject(payload);
+    await projeYukle();
+    setSecilenProje(yeniProje);
+    if (yeniProje) {
+      setVeriGirisi((prev) => ({
+        ...prev,
+        projeAdi: yeniProje.projectName,
+        lokasyon: yeniProje.location,
+        kuruluGucKw: yeniProje.installedPowerKw || prev.kuruluGucKw
+      }));
+    }
+    return yeniProje;
+  }
+
+  async function projeSil(projeId) {
+    await deleteProject(projeId);
+    setProjeListesi((prev) => prev.filter((p) => p.id !== projeId));
+    if (secilenProje?.id === projeId) {
+      setSecilenProje(null);
+    }
+  }
+
+  function projeAc(proje) {
+    setSecilenProje(proje);
+    setVeriGirisi((prev) => ({
+      ...prev,
+      projeAdi: proje.projectName,
+      lokasyon: proje.location,
+      kuruluGucKw: proje.installedPowerKw || prev.kuruluGucKw
+    }));
+  }
+
   const veriGirisiTamam = Boolean(
     String(veriGirisi.projeAdi || "").trim() &&
       String(veriGirisi.lokasyon || "").trim() &&
@@ -233,9 +291,33 @@ function AppWorkspaceProvider({ children }) {
       analizHazir,
       hesaplamaYontemleri: HESAPLAMA_YONTEMLERI,
       alanGuncelle,
-      analizHesapla
+      analizHesapla,
+      projeListesi,
+      secilenProje,
+      totalProjectsCreated,
+      projeYukleniyor,
+      projeHata,
+      projeYukle,
+      projeOlustur,
+      projeSil,
+      projeAc
     }),
-    [veriGirisi, depolamaliSistem, hesaplama, analizSonucu, veriGirisiTamam, depolamaliSistemTamam, analizHazir]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      veriGirisi,
+      depolamaliSistem,
+      hesaplama,
+      analizSonucu,
+      veriGirisiTamam,
+      depolamaliSistemTamam,
+      analizHazir,
+      projeListesi,
+      secilenProje,
+      totalProjectsCreated,
+      projeYukleniyor,
+      projeHata,
+      projeYukle
+    ]
   );
 
   return <AppWorkspaceContext.Provider value={value}>{children}</AppWorkspaceContext.Provider>;

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase, supabaseHazir } from "../lib/supabase";
+import { setAuthToken } from "../api/client";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "solarbatarya_token";
@@ -37,6 +38,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(LEGACY_TOKEN_KEY);
     }
+    setAuthToken(oturumToken || null);
     setToken(oturumToken);
     setUser(mapSupabaseUser(session?.user || null));
   }
