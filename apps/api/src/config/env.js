@@ -19,6 +19,10 @@ module.exports = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   SUPABASE_URL: process.env.SUPABASE_URL || "",
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "",
+  EPIAS_SERVICE_URL:
+    process.env.EPIAS_SERVICE_URL ||
+    "https://seffaflik.epias.com.tr/transparency/service/market/day-ahead-mcp",
+  EPIAS_REQUEST_TIMEOUT_MS: Number(process.env.EPIAS_REQUEST_TIMEOUT_MS || 25000),
   ADMIN_FULL_NAME: process.env.ADMIN_FULL_NAME || "Local Admin",
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || "admin@solarbatarya.local",
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || "Admin12345!"

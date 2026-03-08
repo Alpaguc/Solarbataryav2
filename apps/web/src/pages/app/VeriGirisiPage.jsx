@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { getEpiasData } from "../../api/client";
+import { useEffect, useState } from "react";
+import { getEpiasData, getEpiasDateRange } from "../../api/client";
 import { useAppWorkspace } from "../../context/AppWorkspaceContext";
 
 function toNumber(value, fallback = 0) {
@@ -58,6 +58,26 @@ function VeriGirisiPage() {
   const [epiasMesaj, setEpiasMesaj] = useState("");
   const [pvsystMesaj, setPvsystMesaj] = useState("");
   const [hata, setHata] = useState("");
+  const [epiasAralik, setEpiasAralik] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const aralik = await getEpiasDateRange();
+        if (!aralik?.minDate || !aralik?.maxDate) {
+          return;
+        }
+        setEpiasAralik(aralik);
+        alanGuncelle("veriGirisi", {
+          epiasStartDate: aralik.minDate,
+          epiasEndDate: aralik.maxDate
+        });
+      } catch (_err) {
+        // Aralik bilgisi alinamazsa varsayilan tarihleri koru
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function epiasYukle() {
     setHata("");
@@ -68,8 +88,18 @@ function VeriGirisiPage() {
         startDate: veriGirisi.epiasStartDate,
         endDate: veriGirisi.epiasEndDate
       });
-      alanGuncelle("veriGirisi", { epiasKayitSayisi: Number(sonuc?.count || 0) });
-      setEpiasMesaj(`${Number(sonuc?.count || 0)} EPİAŞ kaydı alındı.`);
+      const kayitSayisi = Number(sonuc?.count || 0);
+      alanGuncelle("veriGirisi", { epiasKayitSayisi: kayitSayisi });
+      if (kayitSayisi === 0) {
+        if (epiasAralik?.minDate && epiasAralik?.maxDate) {
+          setHata(`Seçilen aralıkta veri yok. Önerilen canlı sorgu aralığı: ${epiasAralik.minDate} - ${epiasAralik.maxDate}`);
+        } else {
+          setHata("Seçilen aralıkta EPİAŞ verisi bulunamadı.");
+        }
+        setEpiasMesaj("");
+      } else {
+        setEpiasMesaj(`${kayitSayisi} EPİAŞ kaydı alındı.`);
+      }
     } catch (err) {
       setHata(err?.response?.data?.error || "EPİAŞ verisi alınamadı.");
     } finally {
@@ -192,6 +222,11 @@ function VeriGirisiPage() {
         <article className="glass-card">
           <h2>EPİAŞ Fiyat Verisi</h2>
           <p className="alt-bilgi">Tarih aralığı seçip API üzerinden EPİAŞ kayıtlarını yükle.</p>
+          {epiasAralik?.minDate && epiasAralik?.maxDate && (
+            <div className="bilgi-kutu">
+              Önerilen canlı sorgu aralığı: <strong>{epiasAralik.minDate}</strong> - <strong>{epiasAralik.maxDate}</strong>
+            </div>
+          )}
           <form
             className="simulasyon-form"
             onSubmit={(event) => {

@@ -73,6 +73,11 @@ export async function getEpiasData(params) {
   return data;
 }
 
+export async function getEpiasDateRange() {
+  const { data } = await api.get("/epias-date-range");
+  return data.data;
+}
+
 export async function runSimulation(payload) {
   const { data } = await api.post("/simulations", payload);
   return data.data;

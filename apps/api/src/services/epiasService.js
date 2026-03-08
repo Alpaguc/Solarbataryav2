@@ -32,7 +32,28 @@ async function getEpiasData(startDate, endDate) {
   };
 }
 
+async function getEpiasDateRange() {
+  const bugun = new Date();
+  const bitis = bugun.toISOString().slice(0, 10);
+  const baslangicTarih = new Date(bugun);
+  baslangicTarih.setDate(bugun.getDate() - 7);
+  const baslangic = baslangicTarih.toISOString().slice(0, 10);
+
+  // Canli servis kullandigimiz icin burada "onerilen sorgu araligi" donuyoruz.
+  const row = {
+    minDate: baslangic,
+    maxDate: bitis,
+    totalRows: 0
+  };
+  return {
+    minDate: row?.minDate || null,
+    maxDate: row?.maxDate || null,
+    totalRows: Number(row?.totalRows || 0)
+  };
+}
+
 module.exports = {
   getEpiasData,
+  getEpiasDateRange,
   EpiasError
 };
