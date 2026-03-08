@@ -299,9 +299,18 @@ function AppWorkspaceProvider({ children }) {
     setProjeHata("");
     try {
       if (!supabase) throw new Error("Supabase baglantisi yok.");
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setProjeListesi([]);
+        setProjeYukleniyor(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("user_projects")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
 
@@ -365,10 +374,14 @@ function AppWorkspaceProvider({ children }) {
 
   async function projeOlustur(payload) {
     if (!supabase) throw new Error("Supabase baglantisi yok.");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Proje olusturmak icin giris yapmaniz gerekiyor.");
+
     const { projectName, location, installedPowerKw, description } = payload;
     const { data, error } = await supabase
       .from("user_projects")
       .insert({
+        user_id: user.id,
         project_name: projectName,
         location: location,
         installed_power_kw: installedPowerKw || null,
@@ -394,10 +407,14 @@ function AppWorkspaceProvider({ children }) {
 
   async function projeSil(projeId) {
     if (supabase) {
-      await supabase
-        .from("user_projects")
-        .update({ is_deleted: true })
-        .eq("id", projeId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("user_projects")
+          .update({ is_deleted: true })
+          .eq("id", projeId)
+          .eq("user_id", user.id);
+      }
     }
     try { localStorage.removeItem(storageKey(projeId)); } catch (_e) { /* ignore */ }
     try { localStorage.removeItem(simStorageKey(projeId)); } catch (_e) { /* ignore */ }
