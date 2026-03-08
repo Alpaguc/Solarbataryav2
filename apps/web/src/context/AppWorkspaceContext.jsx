@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { getMyProjects, createProject, deleteProject } from "../api/client";
+import { supabase } from "../lib/supabase";
 
 const AppWorkspaceContext = createContext(null);
 
@@ -298,11 +298,28 @@ function AppWorkspaceProvider({ children }) {
     setProjeYukleniyor(true);
     setProjeHata("");
     try {
-      const veri = await getMyProjects();
-      setProjeListesi(veri?.projects || []);
-      setTotalProjectsCreated(veri?.totalProjectsCreated || 0);
+      if (!supabase) throw new Error("Supabase baglantisi yok.");
+      const { data, error } = await supabase
+        .from("user_projects")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+
+      const tumVeri = data || [];
+      const aktifler = tumVeri
+        .filter(p => !p.is_deleted)
+        .map(p => ({
+          id: p.id,
+          projectName: p.project_name,
+          location: p.location,
+          installedPowerKw: p.installed_power_kw,
+          description: p.description,
+          createdAt: p.created_at
+        }));
+      setProjeListesi(aktifler);
+      setTotalProjectsCreated(tumVeri.length);
     } catch (_err) {
-      setProjeHata("Projeler yuklenemedi.");
+      setProjeHata("Projeler yuklenemedi: " + (_err?.message || ""));
     } finally {
       setProjeYukleniyor(false);
     }
@@ -347,16 +364,41 @@ function AppWorkspaceProvider({ children }) {
   }
 
   async function projeOlustur(payload) {
-    const yeniProje = await createProject(payload);
+    if (!supabase) throw new Error("Supabase baglantisi yok.");
+    const { projectName, location, installedPowerKw, description } = payload;
+    const { data, error } = await supabase
+      .from("user_projects")
+      .insert({
+        project_name: projectName,
+        location: location,
+        installed_power_kw: installedPowerKw || null,
+        description: description || null,
+        is_deleted: false
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+
+    const yeniProje = {
+      id: data.id,
+      projectName: data.project_name,
+      location: data.location,
+      installedPowerKw: data.installed_power_kw,
+      description: data.description,
+      createdAt: data.created_at
+    };
     await projeYukle();
-    if (yeniProje) {
-      projeAc(yeniProje);
-    }
+    projeAc(yeniProje);
     return yeniProje;
   }
 
   async function projeSil(projeId) {
-    await deleteProject(projeId);
+    if (supabase) {
+      await supabase
+        .from("user_projects")
+        .update({ is_deleted: true })
+        .eq("id", projeId);
+    }
     try { localStorage.removeItem(storageKey(projeId)); } catch (_e) { /* ignore */ }
     try { localStorage.removeItem(simStorageKey(projeId)); } catch (_e) { /* ignore */ }
     setProjeListesi((prev) => prev.filter((p) => p.id !== projeId));

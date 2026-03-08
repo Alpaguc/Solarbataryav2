@@ -61,48 +61,50 @@ async function runSim(req, res, next) {
       ...(strategyParams || {})
     };
 
-    // Simülasyon oluştur (DB kaydı)
-    const simId = await simRepo.createSimulation({
-      projectId,
-      userId: req.user.id,
-      batteryCatalogId,
-      pvsystFilename: pvsystFilename || "upload.csv",
-      pvsystDataJson: pvsystData.slice(0, 100),
-      epiasDataJson: epiasAligned.slice(0, 100),
-      acMaxPowerKw: simParams.acMaxPowerKw,
-      dcPowerKw: simParams.dcPowerKw,
-      gridLimitKw: simParams.gridLimitKw,
-      strategyType: strategyType || 'price_threshold',
-      strategyParamsJson: strategyParams,
-      financialParamsJson: financialParams
-    });
-
     // Simülasyonu çalıştır
     let result;
     try {
       result = runSimulation(pvsystData, epiasAligned, battery, strategyType || 'price_threshold', simParams);
     } catch (e) {
-      await simRepo.updateSimulationResult(simId, null, 'error', e.message);
       return res.status(500).json({ success: false, message: `Simulasyon hatasi: ${e.message}` });
     }
 
-    // Saatlik sonuçları kaydet
-    await simRepo.insertHourlyResults(simId, result.hourly);
+    // SQLite'a kaydetmeyi dene (basarisiz olursa sessizce devam et — Render restart'larda DB sifirlanir)
+    let simId = Date.now();
+    try {
+      const summary = { kpis: result.kpis, monthly: result.monthly, meta: result.meta };
+      simId = await simRepo.createSimulation({
+        projectId,
+        userId: req.user.id,
+        batteryCatalogId,
+        pvsystFilename: pvsystFilename || "upload.csv",
+        pvsystDataJson: pvsystData.slice(0, 100),
+        epiasDataJson: epiasAligned.slice(0, 100),
+        acMaxPowerKw: simParams.acMaxPowerKw,
+        dcPowerKw: simParams.dcPowerKw,
+        gridLimitKw: simParams.gridLimitKw,
+        strategyType: strategyType || 'price_threshold',
+        strategyParamsJson: strategyParams,
+        financialParamsJson: financialParams
+      });
+      await simRepo.insertHourlyResults(simId, result.hourly);
+      await simRepo.updateSimulationResult(simId, summary, 'done');
+    } catch (_dbErr) {
+      // SQLite hatasi — sonuclar frontend localStorage'da saklanir
+    }
 
-    // Özet kaydet
     const summary = {
       kpis: result.kpis,
       monthly: result.monthly,
       meta: result.meta
     };
-    await simRepo.updateSimulationResult(simId, summary, 'done');
 
     res.json({
       success: true,
       data: {
         simulationId: simId,
         summary,
-        hourly: result.hourly.slice(0, 168)
+        hourly: result.hourly
       }
     });
   } catch (err) {
