@@ -241,24 +241,35 @@ function SimulasyonSayfasi() {
 }
 
 /**
- * In-memory PVSyst data'dan minimal CSV olustur (backend parse edebilmesi icin)
- * eArrayKwh = DC uretim, eGridKwh = sahaya AC enerji
+ * In-memory PVSyst data'dan minimal CSV olustur (backend parse edebilmesi icin).
+ * Baslik satirinda tarih, EArray, E_Grid olmali (backend E_Grid/EArray ile satir tespit eder).
  */
 function buildPvsystCsv(pvsystData) {
-  const header = "Date Hour;EArray;E_Grid";
-  const unit = ";kWh;kWh";
+  const header = "tarih;GlobInc;GlobEff;EArray;E_Grid";
+  const unit = ";W/m2;W/m2;kW;kW";
   const lines = [
     "PVSyst Re-export",
     "", "", "", "", "", "", "", "", "", "", "", "",
     header,
     unit
   ];
-  for (const h of pvsystData) {
-    const saat = String(h.hourIndex % 24).padStart(2, "0");
+  const AY_GUN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  pvsystData.forEach((h, idx) => {
+    const hourIdx = h.hourIndex != null ? h.hourIndex : idx;
+    const hh = hourIdx % 24;
+    let gunNo = Math.floor(hourIdx / 24);
+    let ay = 0;
+    while (ay < 12 && gunNo >= AY_GUN[ay]) {
+      gunNo -= AY_GUN[ay];
+      ay++;
+    }
+    const gun = gunNo + 1;
+    const dd = String(gun).padStart(2, "0");
+    const mm = String(ay + 1).padStart(2, "0");
     const eArray = (h.eArrayKwh ?? h.dcKw ?? 0).toFixed(3);
     const eGrid  = (h.eGridKwh  ?? h.acKw ?? 0).toFixed(3);
-    lines.push(`1.01.1990 ${saat}:00;${eArray};${eGrid}`);
-  }
+    lines.push(`${dd}.${mm}.1990 ${String(hh).padStart(2, "0")}:00;0;0;${eArray};${eGrid}`);
+  });
   return lines.join("\n");
 }
 

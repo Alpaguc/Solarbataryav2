@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 
 const AppWorkspaceContext = createContext(null);
@@ -233,6 +234,7 @@ function simVerisiKaydet(projeId, data) {
 }
 
 function AppWorkspaceProvider({ children }) {
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const [veriGirisi, setVeriGirisi] = useState(varsayilanVeriGirisi());
   const [depolamaliSistem, setDepolamaliSistem] = useState(VARSAYILAN_DEPOLAMALI_SISTEM);
   const [hesaplama, setHesaplama] = useState(VARSAYILAN_HESAPLAMA);
@@ -334,9 +336,14 @@ function AppWorkspaceProvider({ children }) {
     }
   }, []);
 
+  // Auth hazir ve kullanici giris yapmissa projeleri Supabase'den yukle (her deploy sonrasi kalici)
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      if (!isAuthenticated) setProjeListesi([]);
+      return;
+    }
     projeYukle();
-  }, [projeYukle]);
+  }, [authLoading, isAuthenticated, projeYukle]);
 
   // Giris cikis veya hesap degisince proje listesini yeniden yukle
   useEffect(() => {
