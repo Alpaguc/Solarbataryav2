@@ -381,18 +381,16 @@ function parsePvsystCsv(csvText) {
 
   let headerLineIdx = -1;
   for (let i = 0; i < Math.min(30, lines.length); i++) {
-    if (
-      (lines[i].includes("E_Grid") || lines[i].includes("EArray")) &&
-      lines[i].includes("tarih") &&
-      lines[i].includes(";")
-    ) {
+    const line = lines[i] || "";
+    if (!line.includes(";")) continue;
+    if (line.includes("E_Grid") || line.includes("EArray")) {
       headerLineIdx = i;
       break;
     }
   }
 
   if (headerLineIdx === -1) {
-    throw new Error("PVSyst CSV baslik satiri bulunamadi (tarih, E_Grid/EArray).");
+    throw new Error("PVSyst CSV baslik satiri bulunamadi (E_Grid veya EArray iceren satir).");
   }
 
   const headers = lines[headerLineIdx]
