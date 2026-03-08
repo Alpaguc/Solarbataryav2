@@ -2,26 +2,31 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import PublicNavbar from "./components/PublicNavbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AppWorkspaceProvider } from "./context/AppWorkspaceContext";
+import AppShell from "./components/app/AppShell";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
-import LegacyWorkspacePage from "./pages/LegacyWorkspacePage";
+import VeriGirisiPage from "./pages/app/VeriGirisiPage";
+import DepolamaliSistemPage from "./pages/app/DepolamaliSistemPage";
+import HesaplamaYontemleriPage from "./pages/app/HesaplamaYontemleriPage";
+import AnalizPage from "./pages/app/AnalizPage";
 
 function PrivateLayout() {
-  const { cikisYap } = useAuth();
+  const { user, cikisYap } = useAuth();
 
   return (
-    <div className="uygulama-kapsayici">
-      <div className="legacy-topbar">
-        <button type="button" className="btn btn-danger" onClick={cikisYap}>
-          Cikis
-        </button>
-      </div>
-      <Routes>
-        <Route index element={<LegacyWorkspacePage />} />
-        <Route path="simulasyon" element={<LegacyWorkspacePage />} />
-        <Route path="*" element={<Navigate to="/app" replace />} />
-      </Routes>
-    </div>
+    <AppWorkspaceProvider>
+      <AppShell user={user} onLogout={cikisYap}>
+        <Routes>
+          <Route index element={<Navigate to="/app/veri-girisi" replace />} />
+          <Route path="veri-girisi" element={<VeriGirisiPage />} />
+          <Route path="depolamali-sistem" element={<DepolamaliSistemPage />} />
+          <Route path="hesaplama-yontemleri" element={<HesaplamaYontemleriPage />} />
+          <Route path="analiz" element={<AnalizPage />} />
+          <Route path="*" element={<Navigate to="/app/veri-girisi" replace />} />
+        </Routes>
+      </AppShell>
+    </AppWorkspaceProvider>
   );
 }
 
@@ -60,7 +65,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Navigate to="/app" replace />
+                <Navigate to="/app/veri-girisi" replace />
               </ProtectedRoute>
             }
           />
